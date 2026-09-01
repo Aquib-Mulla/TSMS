@@ -1,13 +1,10 @@
 import React from "react";
+import Asidebar from "./asidebar";
+
 import {
-  LayoutDashboard,
-  Users,
-  MapPinned,
   Siren,
   ShieldAlert,
-  Map,
-  FileWarning,
-  LogOut,
+  Users,
   Bell,
   UserRound,
   Activity,
@@ -18,97 +15,24 @@ import {
 import "../../style/admin.css";
 
 const AdminDashboard = () => {
-  const handleLogout = () => {
-    localStorage.removeItem("admin");
-    window.location.href = "/admin/login";
-  };
 
   return (
     <div className="admin-dashboard">
 
       {/* ================= SIDEBAR ================= */}
-      <aside className="admin-sidebar">
-
-        <div className="admin-logo">
-          <div className="logo-icon">
-            <ShieldAlert size={28} />
-          </div>
-
-          <div>
-            <h2>TourSafe</h2>
-            <span>Admin Panel</span>
-          </div>
-        </div>
-
-        <nav className="admin-nav">
-
-          <div className="nav-section">
-            <p>MAIN</p>
-
-            <a href="/admin/dashboard" className="nav-item active">
-              <LayoutDashboard size={20} />
-              <span>Dashboard</span>
-            </a>
-
-            <a href="/admin/tourists" className="nav-item">
-              <Users size={20} />
-              <span>Tourists</span>
-            </a>
-
-            <a href="/admin/live-tracking" className="nav-item">
-              <MapPinned size={20} />
-              <span>Live Tracking</span>
-            </a>
-          </div>
-
-          <div className="nav-section">
-            <p>SAFETY MANAGEMENT</p>
-
-            <a href="/admin/sos-alerts" className="nav-item">
-              <Siren size={20} />
-              <span>SOS Alerts</span>
-              <span className="nav-badge">3</span>
-            </a>
-
-            <a href="/admin/incidents" className="nav-item">
-              <FileWarning size={20} />
-              <span>Incidents</span>
-            </a>
-
-            <a href="/admin/geofencing" className="nav-item">
-              <Map size={20} />
-              <span>Geo-Fencing</span>
-            </a>
-
-            <a href="/admin/zones" className="nav-item">
-              <ShieldAlert size={20} />
-              <span>Safe / Danger Zones</span>
-            </a>
-          </div>
-
-        </nav>
-
-        <div className="sidebar-bottom">
-
-          <button className="logout-btn" onClick={handleLogout}>
-            <LogOut size={20} />
-            <span>Logout</span>
-          </button>
-
-        </div>
-
-      </aside>
-
+      <Asidebar />
 
       {/* ================= MAIN CONTENT ================= */}
       <main className="admin-main">
 
-        {/* TOP HEADER */}
+        {/* ================= TOP HEADER ================= */}
         <header className="admin-header">
 
           <div>
             <h1>Dashboard</h1>
-            <p>Monitor and manage tourist safety in real time.</p>
+            <p>
+              Monitor and manage tourist safety in real time.
+            </p>
           </div>
 
           <div className="header-right">
@@ -139,6 +63,7 @@ const AdminDashboard = () => {
         {/* ================= STATISTICS ================= */}
         <section className="stats-grid">
 
+          {/* TOTAL TOURISTS */}
           <div className="stat-card">
 
             <div className="stat-icon tourists">
@@ -148,6 +73,7 @@ const AdminDashboard = () => {
             <div className="stat-content">
               <span>Total Tourists</span>
               <h2>1,248</h2>
+
               <small className="positive">
                 +12.5% this month
               </small>
@@ -156,6 +82,7 @@ const AdminDashboard = () => {
           </div>
 
 
+          {/* ACTIVE TOURS */}
           <div className="stat-card">
 
             <div className="stat-icon active">
@@ -165,6 +92,7 @@ const AdminDashboard = () => {
             <div className="stat-content">
               <span>Active Tours</span>
               <h2>326</h2>
+
               <small className="positive">
                 Currently active
               </small>
@@ -173,6 +101,7 @@ const AdminDashboard = () => {
           </div>
 
 
+          {/* SOS ALERTS */}
           <div className="stat-card">
 
             <div className="stat-icon sos">
@@ -182,6 +111,7 @@ const AdminDashboard = () => {
             <div className="stat-content">
               <span>SOS Alerts</span>
               <h2>03</h2>
+
               <small className="negative">
                 Requires attention
               </small>
@@ -190,6 +120,7 @@ const AdminDashboard = () => {
           </div>
 
 
+          {/* OPEN INCIDENTS */}
           <div className="stat-card">
 
             <div className="stat-icon incidents">
@@ -199,6 +130,7 @@ const AdminDashboard = () => {
             <div className="stat-content">
               <span>Open Incidents</span>
               <h2>08</h2>
+
               <small className="warning">
                 Under investigation
               </small>
@@ -212,23 +144,28 @@ const AdminDashboard = () => {
         {/* ================= CONTENT GRID ================= */}
         <section className="dashboard-grid">
 
-          {/* RECENT SOS */}
+          {/* ================= RECENT SOS ================= */}
           <div className="dashboard-card sos-card">
 
             <div className="card-header">
 
               <div>
                 <h3>Recent SOS Alerts</h3>
-                <p>Latest emergency alerts from tourists</p>
+                <p>
+                  Latest emergency alerts from tourists
+                </p>
               </div>
 
-              <a href="/admin/sos-alerts">View All</a>
+              <a href="/admin/sos-alerts">
+                View All
+              </a>
 
             </div>
 
 
             <div className="alert-list">
 
+              {/* ALERT 1 */}
               <div className="alert-item">
 
                 <div className="alert-icon">
@@ -248,6 +185,7 @@ const AdminDashboard = () => {
               </div>
 
 
+              {/* ALERT 2 */}
               <div className="alert-item">
 
                 <div className="alert-icon">
@@ -267,6 +205,7 @@ const AdminDashboard = () => {
               </div>
 
 
+              {/* ALERT 3 */}
               <div className="alert-item">
 
                 <div className="alert-icon">
@@ -290,14 +229,16 @@ const AdminDashboard = () => {
           </div>
 
 
-          {/* SYSTEM STATUS */}
+          {/* ================= SYSTEM OVERVIEW ================= */}
           <div className="dashboard-card">
 
             <div className="card-header">
 
               <div>
                 <h3>System Overview</h3>
-                <p>Current safety monitoring status</p>
+                <p>
+                  Current safety monitoring status
+                </p>
               </div>
 
             </div>
@@ -305,14 +246,17 @@ const AdminDashboard = () => {
 
             <div className="system-list">
 
+              {/* LOCATION TRACKING */}
               <div className="system-item">
 
                 <div className="system-left">
+
                   <div className="system-icon green">
                     <CheckCircle size={19} />
                   </div>
 
                   <span>Location Tracking</span>
+
                 </div>
 
                 <strong className="online">
@@ -322,14 +266,17 @@ const AdminDashboard = () => {
               </div>
 
 
+              {/* GEO-FENCING */}
               <div className="system-item">
 
                 <div className="system-left">
+
                   <div className="system-icon green">
                     <CheckCircle size={19} />
                   </div>
 
                   <span>Geo-Fencing</span>
+
                 </div>
 
                 <strong className="online">
@@ -339,14 +286,17 @@ const AdminDashboard = () => {
               </div>
 
 
+              {/* EMERGENCY SERVICES */}
               <div className="system-item">
 
                 <div className="system-left">
+
                   <div className="system-icon warning-icon">
                     <AlertTriangle size={19} />
                   </div>
 
                   <span>Emergency Services</span>
+
                 </div>
 
                 <strong className="monitoring">
@@ -356,14 +306,17 @@ const AdminDashboard = () => {
               </div>
 
 
+              {/* DATABASE */}
               <div className="system-item">
 
                 <div className="system-left">
+
                   <div className="system-icon green">
                     <CheckCircle size={19} />
                   </div>
 
                   <span>Database</span>
+
                 </div>
 
                 <strong className="online">
@@ -386,7 +339,9 @@ const AdminDashboard = () => {
 
             <div>
               <h3>Recent Tourist Activity</h3>
-              <p>Latest registered and active tourists</p>
+              <p>
+                Latest registered and active tourists
+              </p>
             </div>
 
             <a href="/admin/tourists">

@@ -23,7 +23,10 @@ router.post("/register", async (req, res) => {
         } = req.body;
 
 
-        // Check required fields
+        // ==================================================
+        // CHECK REQUIRED FIELDS
+        // ==================================================
+
         if (!full_name || !email || !password) {
 
             return res.status(400).json({
@@ -34,7 +37,10 @@ router.post("/register", async (req, res) => {
         }
 
 
-        // Check if email already exists
+        // ==================================================
+        // CHECK IF EMAIL ALREADY EXISTS
+        // ==================================================
+
         const [existingUsers] = await pool.execute(
             "SELECT id FROM users WHERE email = ?",
             [email]
@@ -51,26 +57,76 @@ router.post("/register", async (req, res) => {
         }
 
 
-        // Hash password
+        // ==================================================
+        // HASH PASSWORD
+        // ==================================================
+
         const passwordHash = await bcrypt.hash(
             password,
             10
         );
 
 
-        // Insert user
+        // ==================================================
+        // INSERT USER
+        // ==================================================
+
         const [result] = await pool.execute(
+
             `INSERT INTO users
             (full_name, email, phone, password_hash)
             VALUES (?, ?, ?, ?)`,
+
             [
                 full_name,
                 email,
                 phone || null,
                 passwordHash
             ]
+
         );
 
+
+        // ==================================================
+        // GET MYSQL GENERATED USER ID
+        // ==================================================
+
+        const userId = result.insertId;
+
+
+        // ==================================================
+        // GENERATE TOURIST ID
+        //
+        // Example:
+        // 1  -> TS-00001
+        // 25 -> TS-00025
+        // 125 -> TS-00125
+        // ==================================================
+
+        const touristId = `TS-${String(userId).padStart(5, "0")}`;
+
+
+        // ==================================================
+        // SAVE TOURIST ID
+        // ==================================================
+
+        await pool.execute(
+
+            `UPDATE users
+             SET tourist_id = ?
+             WHERE id = ?`,
+
+            [
+                touristId,
+                userId
+            ]
+
+        );
+
+
+        // ==================================================
+        // REGISTRATION SUCCESS
+        // ==================================================
 
         res.status(201).json({
 
@@ -78,7 +134,9 @@ router.post("/register", async (req, res) => {
 
             message: "Registration successful.",
 
-            userId: result.insertId
+            userId: userId,
+
+            touristId: touristId
 
         });
 
@@ -116,37 +174,56 @@ router.post("/login", async (req, res) => {
         } = req.body;
 
 
-        // Check required fields
+        // ==================================================
+        // CHECK REQUIRED FIELDS
+        // ==================================================
+
         if (!email || !password) {
 
             return res.status(400).json({
+
                 success: false,
+
                 message: "Email and password are required."
+
             });
 
         }
 
 
-        // Find user by email
+        // ==================================================
+        // FIND USER
+        // ==================================================
+
         const [users] = await pool.execute(
+
             `SELECT
                 id,
+                tourist_id,
                 full_name,
                 email,
                 phone,
                 password_hash
              FROM users
              WHERE email = ?`,
+
             [email]
+
         );
 
 
-        // User does not exist
+        // ==================================================
+        // USER DOES NOT EXIST
+        // ==================================================
+
         if (users.length === 0) {
 
             return res.status(401).json({
+
                 success: false,
+
                 message: "Invalid email or password."
+
             });
 
         }
@@ -155,38 +232,59 @@ router.post("/login", async (req, res) => {
         const user = users[0];
 
 
-        // Compare entered password with hashed password
+        // ==================================================
+        // CHECK PASSWORD
+        // ==================================================
+
         const passwordMatch = await bcrypt.compare(
+
             password,
+
             user.password_hash
+
         );
 
 
-        // Wrong password
         if (!passwordMatch) {
 
             return res.status(401).json({
+
                 success: false,
+
                 message: "Invalid email or password."
+
             });
 
         }
 
 
-        // Create JWT token
+        // ==================================================
+        // CREATE JWT TOKEN
+        // ==================================================
+
         const token = jwt.sign(
+
             {
                 id: user.id,
+
+                tourist_id: user.tourist_id,
+
                 email: user.email
             },
+
             process.env.JWT_SECRET,
+
             {
                 expiresIn: "1d"
             }
+
         );
 
 
-        // Login successful
+        // ==================================================
+        // LOGIN SUCCESS
+        // ==================================================
+
         res.status(200).json({
 
             success: true,
@@ -196,10 +294,17 @@ router.post("/login", async (req, res) => {
             token,
 
             user: {
+
                 id: user.id,
+
+                tourist_id: user.tourist_id,
+
                 full_name: user.full_name,
+
                 email: user.email,
+
                 phone: user.phone
+
             }
 
         });

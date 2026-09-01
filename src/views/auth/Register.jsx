@@ -3,7 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import "../../style/auth.css";
 
 const Register = () => {
+
   const navigate = useNavigate();
+
+  // ======================================================
+  // FORM DATA
+  // ======================================================
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -13,13 +18,30 @@ const Register = () => {
     confirmPassword: "",
   });
 
+
+  // ======================================================
+  // STATES
+  // ======================================================
+
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [touristId, setTouristId] = useState("");
 
-  // Backend URL from .env
-  const API_URL = import.meta.env.VITE_API_URL;
+
+  // ======================================================
+  // BACKEND URL
+  // ======================================================
+
+  const API_URL =
+    import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+
+  // ======================================================
+  // HANDLE INPUT CHANGE
+  // ======================================================
 
   const handleChange = (e) => {
+
     const { name, value } = e.target;
 
     setFormData((previousData) => ({
@@ -28,14 +50,25 @@ const Register = () => {
     }));
 
     setError("");
+
   };
 
+
+  // ======================================================
+  // HANDLE REGISTER
+  // ======================================================
+
   const handleSubmit = async (e) => {
+
     e.preventDefault();
 
     setError("");
 
-    // Check all fields
+
+    // ====================================================
+    // VALIDATION
+    // ====================================================
+
     if (
       !formData.fullName.trim() ||
       !formData.email.trim() ||
@@ -43,35 +76,64 @@ const Register = () => {
       !formData.password ||
       !formData.confirmPassword
     ) {
+
       setError("Please fill in all fields.");
+
       return;
+
     }
 
-    // Check password length
+
+    // ====================================================
+    // PASSWORD LENGTH
+    // ====================================================
+
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters.");
+
+      setError(
+        "Password must be at least 6 characters."
+      );
+
       return;
+
     }
 
-    // Check password match
-    if (formData.password !== formData.confirmPassword) {
+
+    // ====================================================
+    // PASSWORD MATCH
+    // ====================================================
+
+    if (
+      formData.password !==
+      formData.confirmPassword
+    ) {
+
       setError("Passwords do not match.");
+
       return;
+
     }
 
-    // Check API URL
-    if (!API_URL) {
-      console.error("VITE_API_URL is missing in .env");
-      setError("Server configuration is missing.");
-      return;
-    }
 
     try {
+
       setLoading(true);
+
+
+      console.log(
+        "Sending registration request to:",
+        `${API_URL}/api/auth/register`
+      );
+
+
+      // ==================================================
+      // SEND REQUEST TO BACKEND
+      // ==================================================
 
       const response = await fetch(
         `${API_URL}/api/auth/register`,
         {
+
           method: "POST",
 
           headers: {
@@ -79,52 +141,229 @@ const Register = () => {
           },
 
           body: JSON.stringify({
-            full_name: formData.fullName.trim(),
-            email: formData.email.trim(),
-            phone: formData.mobile.trim(),
-            password: formData.password,
+
+            full_name:
+              formData.fullName.trim(),
+
+            email:
+              formData.email.trim(),
+
+            phone:
+              formData.mobile.trim(),
+
+            password:
+              formData.password,
+
           }),
+
         }
       );
 
-      // Get response
+
+      // ==================================================
+      // GET SERVER RESPONSE
+      // ==================================================
+
       const data = await response.json();
 
-      console.log("Server response:", data);
 
-      // Server returned an error
+      console.log(
+        "Registration response:",
+        data
+      );
+
+
+      // ==================================================
+      // SERVER ERROR
+      // ==================================================
+
       if (!response.ok) {
+
         setError(
-          data.message || "Registration failed. Please try again."
+          data.message ||
+          "Registration failed. Please try again."
         );
+
         return;
+
       }
 
-      // Registration successful
-      console.log("Registration successful:", data);
 
-      alert("Registration successful!");
+      // ==================================================
+      // SUCCESS
+      // ==================================================
 
-      navigate("/login");
+      if (data.success) {
+
+        console.log(
+          "Tourist ID:",
+          data.touristId
+        );
+
+
+        // Save Tourist ID in state
+        setTouristId(data.touristId);
+
+
+        // Optional: save user information
+        localStorage.setItem(
+          "touristId",
+          data.touristId
+        );
+
+        localStorage.setItem(
+          "userId",
+          data.userId
+        );
+
+
+        // Clear form
+        setFormData({
+          fullName: "",
+          email: "",
+          mobile: "",
+          password: "",
+          confirmPassword: "",
+        });
+
+      }
 
     } catch (error) {
-      console.error("Registration Error:", error);
+
+      console.error(
+        "Registration Error:",
+        error
+      );
+
+
+      // ==================================================
+      // CONNECTION ERROR
+      // ==================================================
 
       setError(
-        "Unable to connect to the server. Please check your internet connection and try again."
+        `Unable to connect to the server at ${API_URL}. Make sure the backend is running.`
       );
 
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
+
+  // ======================================================
+  // SUCCESS SCREEN
+  // ======================================================
+
+  if (touristId) {
+
+    return (
+
+      <div className="register-page">
+
+        <div className="register-card">
+
+          <div className="register-header">
+
+            <h1>TourSafe</h1>
+
+            <h2>Registration Successful</h2>
+
+            <p>
+              Your account has been created successfully.
+            </p>
+
+          </div>
+
+
+          {/* TOURIST ID */}
+
+          <div
+            style={{
+              textAlign: "center",
+              padding: "25px",
+              margin: "20px 0",
+              borderRadius: "10px",
+              background: "#f0fdfa",
+              border: "1px solid #0f766e",
+            }}
+          >
+
+            <p
+              style={{
+                marginBottom: "10px",
+                fontSize: "14px",
+                color: "#555",
+              }}
+            >
+              Your Tourist ID
+            </p>
+
+
+            <h2
+              style={{
+                margin: "0",
+                color: "#0f766e",
+                fontSize: "30px",
+                letterSpacing: "2px",
+              }}
+            >
+              {touristId}
+            </h2>
+
+
+            <p
+              style={{
+                marginTop: "12px",
+                fontSize: "13px",
+                color: "#555",
+              }}
+            >
+              Please remember this ID.
+              <br />
+              It will be used to identify and track
+              your TourSafe account.
+            </p>
+
+          </div>
+
+
+          {/* LOGIN BUTTON */}
+
+          <button
+            type="button"
+            className="register-button"
+            onClick={() => navigate("/login")}
+          >
+            Continue to Login
+          </button>
+
+        </div>
+
+      </div>
+
+    );
+
+  }
+
+
+  // ======================================================
+  // REGISTRATION FORM
+  // ======================================================
+
   return (
+
     <div className="register-page">
 
       <div className="register-card">
 
-        {/* Header */}
+
+        {/* =================================================
+            HEADER
+        ================================================= */}
+
         <div className="register-header">
 
           <h1>TourSafe</h1>
@@ -138,17 +377,31 @@ const Register = () => {
 
         </div>
 
-        {/* Error */}
+
+        {/* =================================================
+            ERROR
+        ================================================= */}
+
         {error && (
+
           <div className="register-error">
+
             {error}
+
           </div>
+
         )}
 
-        {/* Registration Form */}
+
+        {/* =================================================
+            FORM
+        ================================================= */}
+
         <form onSubmit={handleSubmit}>
 
-          {/* Full Name */}
+
+          {/* FULL NAME */}
+
           <div className="form-group">
 
             <label htmlFor="fullName">
@@ -167,7 +420,9 @@ const Register = () => {
 
           </div>
 
-          {/* Email */}
+
+          {/* EMAIL */}
+
           <div className="form-group">
 
             <label htmlFor="email">
@@ -186,7 +441,9 @@ const Register = () => {
 
           </div>
 
-          {/* Mobile */}
+
+          {/* MOBILE */}
+
           <div className="form-group">
 
             <label htmlFor="mobile">
@@ -205,7 +462,9 @@ const Register = () => {
 
           </div>
 
-          {/* Password */}
+
+          {/* PASSWORD */}
+
           <div className="form-group">
 
             <label htmlFor="password">
@@ -224,7 +483,9 @@ const Register = () => {
 
           </div>
 
-          {/* Confirm Password */}
+
+          {/* CONFIRM PASSWORD */}
+
           <div className="form-group">
 
             <label htmlFor="confirmPassword">
@@ -243,7 +504,9 @@ const Register = () => {
 
           </div>
 
-          {/* Terms */}
+
+          {/* TERMS */}
+
           <div className="terms">
 
             <input
@@ -254,26 +517,39 @@ const Register = () => {
             />
 
             <label htmlFor="terms">
-              I agree to the Terms & Conditions and Privacy Policy.
+              I agree to the Terms & Conditions
+              and Privacy Policy.
             </label>
 
           </div>
 
-          {/* Submit */}
+
+          {/* SUBMIT */}
+
           <button
             type="submit"
             className="register-button"
             disabled={loading}
           >
-            {loading ? "Creating Account..." : "Create Account"}
+
+            {loading
+              ? "Creating Account..."
+              : "Create Account"}
+
           </button>
 
         </form>
 
-        {/* Login */}
+
+        {/* =================================================
+            LOGIN
+        ================================================= */}
+
         <div className="login-link">
 
-          <span>Already have an account? </span>
+          <span>
+            Already have an account?{" "}
+          </span>
 
           <Link to="/login">
             Login
@@ -284,7 +560,9 @@ const Register = () => {
       </div>
 
     </div>
+
   );
+
 };
 
 export default Register;

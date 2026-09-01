@@ -2460,11 +2460,11 @@
       rgba(0, 0, 0, 0.55),
       rgba(0, 0, 0, 0.55)
     ),
-    url("https://i.pinimg.com/736x/c1/ac/74/c1ac74bd17b032d52b5404912cf753c2.jpg");
+    url("../images/contact.jpg.jpeg");
 
   background-repeat: none;
   background-size: cover;
-  background-position: center 85%;
+  background-position: center 45%;
   margin-top: 50px;
 }
 
@@ -2475,20 +2475,17 @@
 .contact-heading h1 {
   margin: 0;
 
-  font-size: 45px;
+  font-size: 64px;
   font-weight: 700;
 
   color: #ffffff;
 }
 
-.contact-heading h1 span {
-  color: #0f766e;
-}
 
 .contact-heading p {
   margin-top: 12px;
 
-  font-size: 17px;
+  font-size: 15px;
   color: #ffffff;
 }
 
@@ -2545,7 +2542,7 @@
 
   grid-template-columns: repeat(3, 1fr);
 
-  gap: 25px;
+  gap: 70px;
 }
 
 

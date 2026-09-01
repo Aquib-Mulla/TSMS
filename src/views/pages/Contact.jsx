@@ -13,7 +13,7 @@ const Contact = () => {
       {/* ================= CONTACT HEADING ================= */}
       <section className="contact-heading">
         <div className="contact-heading-overlay">
-          <h1>Contact <span>TourSafe</span></h1>
+          <h1>Contact</h1>
           <p>
             We are here to help. Get in touch with us.
           </p>

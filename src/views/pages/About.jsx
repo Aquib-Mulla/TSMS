@@ -17,7 +17,7 @@ const About = () => {
         <div className="about-overlay"></div>
 
         <div className="about-hero-content">
-          <p>TOURSAFE</p>
+          {/* <p>TOURSAFE</p> */}
           <h1>About</h1>
           <span>
             Smart Tourist Safety Monitoring System using Geo-Fencing

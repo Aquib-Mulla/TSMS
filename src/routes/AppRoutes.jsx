@@ -9,6 +9,8 @@ import Contact from "../views/pages/Contact";
 // for admin
 import AdminLogin from "../views/admin/AdminLogin";
 import AdminDashboard from "../views/admin/AdminDashboard";
+import Tourists from "../views/admin/Tourists";
+import LiveMap from "../views/admin/LiveMap";
 function AppRoutes() {
   return (
     <Routes>
@@ -21,6 +23,9 @@ function AppRoutes() {
       {/* ===========admin============ */}
       <Route path="/adminlogin" element={<AdminLogin />} />
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      <Route path="/admin/tourists" element={<Tourists />} />
+      <Route path="/admin/livemap" element={<LiveMap />}/>
+      
     </Routes>
   );
 }

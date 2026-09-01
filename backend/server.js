@@ -1,67 +1,107 @@
 const express = require("express");
 const cors = require("cors");
+const http = require("http");
+const { Server } = require("socket.io");
 require("dotenv").config();
 
 const pool = require("./config/database");
-const authRoutes = require("./routes/auth.routes");
-const adminRoutes = require("./routes/admin.routes");
 
+const adminRoutes = require("./routes/admin.routes");
+const authRoutes = require("./routes/auth.routes");
+const locationRoutes = require("./routes/location.routes");
 
 const app = express();
 
-
-// ======================================================
+// ==========================================
 // MIDDLEWARE
-// ======================================================
+// ==========================================
 
-app.use(cors());
+app.use(cors({
+    origin: "*"
+}));
 
 app.use(express.json());
 
 
-// ======================================================
-// HOME
-// ======================================================
+// ==========================================
+// HTTP SERVER
+// ==========================================
 
-app.get("/", (req, res) => {
+const server = http.createServer(app);
 
-    res.json({
-        message: "TSMS Backend is running"
+
+// ==========================================
+// SOCKET.IO
+// ==========================================
+
+const io = new Server(server, {
+    cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+    }
+});
+
+
+// ==========================================
+// SOCKET CONNECTION
+// ==========================================
+
+io.on("connection", (socket) => {
+
+    console.log("Socket connected:", socket.id);
+
+    socket.on("disconnect", () => {
+        console.log("Socket disconnected:", socket.id);
     });
 
 });
 
 
-// ======================================================
+// ==========================================
+// ROUTES
+// ==========================================
+
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes)
+app.use("/api/location", locationRoutes);
+
+
+// ==========================================
+// HOME
+// ==========================================
+
+app.get("/", (req, res) => {
+    res.json({
+        message: "TSMS Backend is running"
+    });
+});
+
+
+// ==========================================
 // DATABASE TEST
-// ======================================================
+// ==========================================
 
 app.get("/api/test-db", async (req, res) => {
 
     try {
 
         const [rows] = await pool.query(
-            "SELECT DATABASE() AS database_name"
+            "SELECT 1 AS result"
         );
 
         res.json({
-
             success: true,
-
-            database: rows[0].database_name
-
+            message: "Database connected successfully",
+            result: rows
         });
 
     } catch (error) {
 
-        console.error("DATABASE ERROR:", error);
+        console.error(error);
 
         res.status(500).json({
-
             success: false,
-
-            error: error.message
-
+            message: "Database connection failed"
         });
 
     }
@@ -69,36 +109,16 @@ app.get("/api/test-db", async (req, res) => {
 });
 
 
-// ======================================================
-// AUTH ROUTES
-// ======================================================
-
-app.use(
-    "/api/auth",
-    authRoutes
-);
-
-
-// ======================================================
-// ADMIN ROUTES
-// ======================================================
-
-app.use(
-    "/api/admin",
-    adminRoutes
-);
-
-
-// ======================================================
+// ==========================================
 // START SERVER
-// ======================================================
+// ==========================================
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
 
     console.log(
-        `TSMS Backend running on http://localhost:${PORT}`
+        `Server running on http://localhost:${PORT}`
     );
 
 });
