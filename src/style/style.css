@@ -841,7 +841,10 @@
 ========================================= */
 
 @media (max-width: 1050px) {
-
+  .logo {
+    font-size: 24px;
+    font-weight: 750;
+  }
   .nav-links {
     gap: 18px;
   }
@@ -875,7 +878,7 @@
 @media (max-width: 800px) {
 
   .navbar {
-    padding: 18px 5%;
+    padding: 8px 5%;
   }
 
   .desktop-only {
@@ -935,6 +938,7 @@
   }
 
   .hero {
+    margin-top: 48px;
     min-height: 700px;
   }
 
@@ -977,20 +981,32 @@
   .hero-content {
     padding-top: 100px;
   }
-
-  .hero h1 {
-    font-size: 45px;
+  .section-title h2{
+  font-size:clamp(35px, 5vw, 35px);
   }
-
+  .hero h1 {
+    font-size: 36px;
+  }
+  .hero-badge{
+    font-size: 10px;
+    gap: 3px;
+    padding: 5px 10px;
+    margin-bottom: 12px;
+  }
   .hero p {
-    font-size: 14px;
+    font-size: 10px;
+    max-width: 290px;
   }
 
   .hero-buttons {
     flex-direction: column;
     align-items: flex-start;
   }
-
+  .hero-buttons a{
+    padding: 12px 15px;
+    font-size: 12px;
+    font-weight: 700;
+  }
   .travel-gallery,
   .features-section {
     padding-top: 80px;
@@ -1007,10 +1023,26 @@
 
   .features-grid {
     grid-template-columns: 1fr;
+    align-items: center;
+    align-content: center;
+    display:flex;
+    gap: 5px;
+    margin-left: 5px;
   }
 
   .feature-card {
-    min-height: 300px;
+    min-height: 100px;
+    min-width: 300px;
+    padding-left: 20px;
+  }
+  .feature-card .feature-icon{
+    margin-top: 10px;
+  }
+  .feature-card h3{
+
+  }
+  .cta-section{
+    border-radius: 20px;
   }
 
   .how-image {
@@ -1034,6 +1066,10 @@
   .footer-bottom {
     flex-direction: column;
     gap: 10px;
+  }
+  .section-title p{
+    font-size: 12px;
+    max-width: 340px;
   }
 
 }
@@ -2426,7 +2462,457 @@
   }
 
 }
+/* =====================================================
+   MOBILE RESPONSIVE - MAX 414px
+===================================================== */
 
+@media (max-width: 414px) {
+
+  /* ===================================================
+     TOP BAR
+  =================================================== */
+
+  .map-top-bar {
+    top: 8px;
+    left: 8px;
+    right: 8px;
+
+    gap: 8px;
+  }
+
+  .tour-safe-title {
+    padding: 7px 9px;
+
+    gap: 8px;
+
+    border-radius: 10px;
+  }
+
+  .tour-safe-logo {
+    width: 34px;
+    height: 34px;
+
+    border-radius: 8px;
+
+    font-size: 12px;
+  }
+
+  .tour-safe-title h2 {
+    font-size: 14px;
+  }
+
+  .tour-safe-title span {
+    display: none;
+  }
+
+  .tour-status {
+    padding: 8px 10px;
+
+    gap: 6px;
+
+    font-size: 10px;
+
+    border-radius: 20px;
+
+    white-space: nowrap;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+  }
+
+
+  /* ===================================================
+     RISK CARD
+  =================================================== */
+
+  .risk-card {
+    top: 65px;
+    left: 8px;
+
+    width: 150px;
+
+    padding: 10px;
+
+    border-radius: 11px;
+  }
+
+  .risk-card-header {
+    gap: 8px;
+  }
+
+  .risk-icon {
+    width: 30px;
+    height: 30px;
+
+    border-radius: 7px;
+  }
+
+  .risk-icon svg {
+    font-size: 17px;
+  }
+
+  .risk-label {
+    font-size: 9px;
+  }
+
+  .risk-card h3 {
+    font-size: 20px;
+  }
+
+  .risk-progress {
+    height: 5px;
+
+    margin-top: 10px;
+  }
+
+  .risk-description {
+    margin-top: 6px;
+
+    font-size: 9px;
+  }
+
+
+  /* ===================================================
+     MAP CONTROLS
+  =================================================== */
+
+  .map-controls {
+    top: 65px;
+    right: 8px;
+
+    gap: 6px;
+  }
+
+  .map-control-button {
+    width: 38px;
+    height: 38px;
+
+    border-radius: 8px;
+  }
+
+  .map-control-button svg {
+    font-size: 19px;
+  }
+
+
+  /* ===================================================
+     SETTINGS PANEL
+  =================================================== */
+
+  .map-settings-panel {
+    top: 115px;
+
+    left: 8px;
+    right: 8px;
+
+    width: auto;
+
+    max-height: calc(100vh - 130px);
+
+    overflow-y: auto;
+
+    border-radius: 12px;
+  }
+
+  .settings-header {
+    padding: 13px;
+  }
+
+  .settings-header h3 {
+    font-size: 14px;
+  }
+
+  .settings-header span {
+    font-size: 9px;
+  }
+
+  .settings-close {
+    width: 30px;
+    height: 30px;
+  }
+
+  .settings-section {
+    padding: 12px;
+  }
+
+  .settings-section h4 {
+    margin-bottom: 9px;
+
+    font-size: 10px;
+  }
+
+
+  /* ===================================================
+     MAP TYPE OPTIONS
+  =================================================== */
+
+  .map-type-options {
+    gap: 5px;
+  }
+
+  .map-type-options button {
+    padding: 8px 3px;
+
+    border-radius: 7px;
+
+    font-size: 9px;
+  }
+
+  .map-type-options button svg {
+    font-size: 17px;
+  }
+
+
+  /* ===================================================
+     SETTING TOGGLE
+  =================================================== */
+
+  .setting-toggle {
+    padding: 8px 0;
+  }
+
+  .setting-toggle > div {
+    gap: 6px;
+  }
+
+  .setting-toggle svg {
+    font-size: 17px;
+  }
+
+  .setting-toggle span {
+    font-size: 10px;
+  }
+
+  .setting-toggle input {
+    width: 16px;
+    height: 16px;
+  }
+
+
+  /* ===================================================
+     MONITORING STATUS
+  =================================================== */
+
+  .settings-monitoring {
+    margin: 10px;
+
+    padding: 9px;
+
+    gap: 8px;
+
+    border-radius: 8px;
+  }
+
+  .monitoring-icon {
+    width: 30px;
+    height: 30px;
+
+    border-radius: 7px;
+  }
+
+  .settings-monitoring strong {
+    font-size: 10px;
+  }
+
+  .settings-monitoring span {
+    font-size: 9px;
+  }
+
+
+  /* ===================================================
+     START / STOP TOUR
+  =================================================== */
+
+  .tour-control {
+    left: 50%;
+
+    bottom: 15px;
+
+    width: auto;
+  }
+
+  .start-tour-button,
+  .stop-tour-button {
+    min-width: 150px;
+
+    width: 150px;
+
+    height: 46px;
+
+    padding: 0 15px;
+
+    gap: 7px;
+
+    border-radius: 24px;
+
+    font-size: 13px;
+  }
+
+  .start-tour-button svg,
+  .stop-tour-button svg {
+    font-size: 19px;
+  }
+
+
+  /* ===================================================
+     SOS BUTTON
+  =================================================== */
+
+  .sos-button {
+    right: 8px;
+    bottom: 15px;
+
+    min-width: 0;
+
+    width: 48px;
+    height: 46px;
+
+    padding: 0;
+
+    gap: 0;
+
+    border-radius: 50%;
+  }
+
+  .sos-button svg {
+    font-size: 20px;
+  }
+
+  .sos-button span {
+    display: none;
+  }
+
+
+  /* ===================================================
+     LOCATION ERROR
+  =================================================== */
+
+  .location-error {
+    left: 8px;
+    right: 8px;
+
+    bottom: 72px;
+
+    width: auto;
+
+    max-width: none;
+
+    padding: 9px 10px;
+
+    gap: 7px;
+
+    border-radius: 8px;
+
+    font-size: 10px;
+  }
+
+  .location-error svg {
+    font-size: 17px;
+  }
+
+
+  /* ===================================================
+     SOS ALERT PANEL
+  =================================================== */
+
+  .sos-alert-panel {
+    top: 65px;
+
+    left: 8px;
+    right: 8px;
+
+    width: auto;
+    min-width: 0;
+
+    transform: none;
+
+    gap: 8px;
+
+    padding: 10px;
+
+    border-left-width: 3px;
+
+    border-radius: 9px;
+  }
+
+  .sos-alert-icon {
+    width: 32px;
+    height: 32px;
+
+    flex-shrink: 0;
+
+    border-radius: 7px;
+  }
+
+  .sos-alert-icon svg {
+    font-size: 18px;
+  }
+
+  .sos-alert-panel strong {
+    font-size: 10px;
+  }
+
+  .sos-alert-panel span {
+    font-size: 8px;
+  }
+
+  .sos-alert-panel button {
+    padding: 5px 7px;
+
+    font-size: 8px;
+
+    flex-shrink: 0;
+  }
+
+
+  /* ===================================================
+     CURRENT LOCATION
+  =================================================== */
+
+  .current-location-marker {
+    width: 60px;
+    height: 60px;
+  }
+
+  .location-accuracy-circle {
+    width: 54px;
+    height: 54px;
+  }
+
+  .location-dot {
+    width: 16px;
+    height: 16px;
+
+    border-width: 2px;
+  }
+
+
+  /* ===================================================
+     MAP ERROR
+  =================================================== */
+
+  .map-error {
+    padding: 20px;
+
+    box-sizing: border-box;
+  }
+
+  .map-error h3 {
+    font-size: 18px;
+  }
+
+  .map-error p {
+    font-size: 12px;
+  }
+  .gmnoprint{
+    display: none;
+  }
+  .tour-safe-title{
+    display: none;
+  }
+}
 
 
 /* contact============================================================================================== */

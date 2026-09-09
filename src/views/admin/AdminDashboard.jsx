@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Asidebar from "./asidebar";
 
 import {
@@ -10,37 +10,329 @@ import {
   Activity,
   CheckCircle,
   AlertTriangle,
+  MapPin,
+  RefreshCw,
 } from "lucide-react";
 
 import "../../style/admin.css";
 
+const API_URL = (
+  import.meta.env.VITE_API_URL || "http://localhost:5000"
+).replace(/\/$/, "");
+
+
 const AdminDashboard = () => {
+
+  // =====================================================
+  // STATE
+  // =====================================================
+
+  const [tourists, setTourists] = useState([]);
+  const [activeTourists, setActiveTourists] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const [error, setError] = useState("");
+
+
+  // =====================================================
+  // FETCH ALL TOURISTS
+  // =====================================================
+
+  const fetchTourists = useCallback(async () => {
+
+    try {
+
+      const response = await fetch(
+        `${API_URL}/api/admin/tourists`
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `HTTP error ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+
+      console.log(
+        "ADMIN - ALL TOURISTS:",
+        data
+      );
+
+      if (data.success) {
+
+        setTourists(
+          Array.isArray(data.tourists)
+            ? data.tourists
+            : []
+        );
+
+      } else {
+
+        throw new Error(
+          data.message || "Unable to fetch tourists"
+        );
+
+      }
+
+    } catch (err) {
+
+      console.error(
+        "FETCH TOURISTS ERROR:",
+        err
+      );
+
+      setError(
+        "Unable to connect to tourist service."
+      );
+
+    }
+
+  }, []);
+
+
+  // =====================================================
+  // FETCH ACTIVE TOURISTS
+  // =====================================================
+
+  const fetchActiveTourists = useCallback(async () => {
+
+    try {
+
+      const response = await fetch(
+        `${API_URL}/api/location/active`
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `HTTP error ${response.status}`
+        );
+      }
+
+      const data = await response.json();
+
+      console.log(
+        "ADMIN - ACTIVE TOURISTS:",
+        data
+      );
+
+      if (data.success) {
+
+        setActiveTourists(
+          Array.isArray(data.tourists)
+            ? data.tourists
+            : []
+        );
+
+      } else {
+
+        throw new Error(
+          data.message || "Unable to fetch active tourists"
+        );
+
+      }
+
+    } catch (err) {
+
+      console.error(
+        "FETCH ACTIVE TOURISTS ERROR:",
+        err
+      );
+
+      setError(
+        "Unable to fetch live tourist locations."
+      );
+
+    }
+
+  }, []);
+
+
+  // =====================================================
+  // LOAD DASHBOARD
+  // =====================================================
+
+  const loadDashboard = useCallback(async () => {
+
+    setRefreshing(true);
+
+    await Promise.all([
+      fetchTourists(),
+      fetchActiveTourists()
+    ]);
+
+    setLoading(false);
+    setRefreshing(false);
+
+  }, [
+    fetchTourists,
+    fetchActiveTourists
+  ]);
+
+
+  // =====================================================
+  // INITIAL LOAD + AUTO REFRESH
+  // =====================================================
+
+  useEffect(() => {
+
+    loadDashboard();
+
+    const interval = setInterval(() => {
+
+      fetchTourists();
+      fetchActiveTourists();
+
+    }, 3000);
+
+    return () => {
+      clearInterval(interval);
+    };
+
+  }, [
+    loadDashboard,
+    fetchTourists,
+    fetchActiveTourists
+  ]);
+
+
+  // =====================================================
+  // HELPERS
+  // =====================================================
+
+  const formatTime = (date) => {
+
+    if (!date) {
+      return "Never";
+    }
+
+    const locationDate = new Date(date);
+
+    if (Number.isNaN(locationDate.getTime())) {
+      return "Unknown";
+    }
+
+    const now = new Date();
+
+    const difference =
+      Math.floor(
+        (now - locationDate) / 1000
+      );
+
+    if (difference < 10) {
+      return "Just now";
+    }
+
+    if (difference < 60) {
+      return `${difference} sec ago`;
+    }
+
+    const minutes =
+      Math.floor(difference / 60);
+
+    if (minutes < 60) {
+      return `${minutes} min ago`;
+    }
+
+    const hours =
+      Math.floor(minutes / 60);
+
+    return `${hours} hr ago`;
+  };
+
+
+const isTouristOnline = (tourist) => {
+  return (
+    tourist.is_online === 1 ||
+    tourist.is_online === true
+  );
+};
+
+  // =====================================================
+  // DERIVED DATA
+  // =====================================================
+
+const totalTourists =
+  tourists.filter(
+    (tourist) => tourist.isOnline
+  ).length;
+  const onlineTourists = tourists.filter(
+    isTouristOnline
+  );
+
+  const activeTours =
+    activeTourists.length;
+
+
+  // =====================================================
+  // MAIN UI
+  // =====================================================
 
   return (
     <div className="admin-dashboard">
 
-      {/* ================= SIDEBAR ================= */}
+      {/* =================================================
+          SIDEBAR
+      ================================================= */}
+
       <Asidebar />
 
-      {/* ================= MAIN CONTENT ================= */}
+
+      {/* =================================================
+          MAIN CONTENT
+      ================================================= */}
+
       <main className="admin-main">
 
-        {/* ================= TOP HEADER ================= */}
+
+        {/* =================================================
+            HEADER
+        ================================================= */}
+
         <header className="admin-header">
 
           <div>
+
             <h1>Dashboard</h1>
+
             <p>
               Monitor and manage tourist safety in real time.
             </p>
+
           </div>
+
 
           <div className="header-right">
 
-            <button className="notification-btn">
+            <button
+              className="notification-btn"
+              title="Notifications"
+            >
               <Bell size={21} />
+
               <span className="notification-dot"></span>
+
             </button>
+
+
+            <button
+              className="notification-btn"
+              onClick={loadDashboard}
+              title="Refresh dashboard"
+              disabled={refreshing}
+            >
+              <RefreshCw
+                size={20}
+                className={
+                  refreshing
+                    ? "refresh-spinning"
+                    : ""
+                }
+              />
+            </button>
+
 
             <div className="admin-profile">
 
@@ -49,8 +341,13 @@ const AdminDashboard = () => {
               </div>
 
               <div>
+
                 <strong>Admin</strong>
-                <span>Administrator</span>
+
+                <span>
+                  Administrator
+                </span>
+
               </div>
 
             </div>
@@ -60,10 +357,32 @@ const AdminDashboard = () => {
         </header>
 
 
-        {/* ================= STATISTICS ================= */}
+        {/* =================================================
+            ERROR
+        ================================================= */}
+
+        {error && (
+
+          <div className="dashboard-error">
+
+            <AlertTriangle size={18} />
+
+            <span>{error}</span>
+
+          </div>
+
+        )}
+
+
+        {/* =================================================
+            STATISTICS
+        ================================================= */}
+
         <section className="stats-grid">
 
+
           {/* TOTAL TOURISTS */}
+
           <div className="stat-card">
 
             <div className="stat-icon tourists">
@@ -71,18 +390,28 @@ const AdminDashboard = () => {
             </div>
 
             <div className="stat-content">
-              <span>Total Tourists</span>
-              <h2>1,248</h2>
+
+              <span>
+                Total Tourists
+              </span>
+
+              <h2>
+                {loading
+                  ? "..."
+                  : totalTourists}
+              </h2>
 
               <small className="positive">
-                +12.5% this month
+                Registered tourists
               </small>
+
             </div>
 
           </div>
 
 
           {/* ACTIVE TOURS */}
+
           <div className="stat-card">
 
             <div className="stat-icon active">
@@ -90,18 +419,28 @@ const AdminDashboard = () => {
             </div>
 
             <div className="stat-content">
-              <span>Active Tours</span>
-              <h2>326</h2>
+
+              <span>
+                Active Tours
+              </span>
+
+              <h2>
+                {loading
+                  ? "..."
+                  : activeTours}
+              </h2>
 
               <small className="positive">
-                Currently active
+                Currently tracking
               </small>
+
             </div>
 
           </div>
 
 
-          {/* SOS ALERTS */}
+          {/* SOS */}
+
           <div className="stat-card">
 
             <div className="stat-icon sos">
@@ -109,18 +448,26 @@ const AdminDashboard = () => {
             </div>
 
             <div className="stat-content">
-              <span>SOS Alerts</span>
-              <h2>03</h2>
+
+              <span>
+                SOS Alerts
+              </span>
+
+              <h2>
+                0
+              </h2>
 
               <small className="negative">
                 Requires attention
               </small>
+
             </div>
 
           </div>
 
 
-          {/* OPEN INCIDENTS */}
+          {/* INCIDENTS */}
+
           <div className="stat-card">
 
             <div className="stat-icon incidents">
@@ -128,202 +475,18 @@ const AdminDashboard = () => {
             </div>
 
             <div className="stat-content">
-              <span>Open Incidents</span>
-              <h2>08</h2>
+
+              <span>
+                Open Incidents
+              </span>
+
+              <h2>
+                0
+              </h2>
 
               <small className="warning">
                 Under investigation
               </small>
-            </div>
-
-          </div>
-
-        </section>
-
-
-        {/* ================= CONTENT GRID ================= */}
-        <section className="dashboard-grid">
-
-          {/* ================= RECENT SOS ================= */}
-          <div className="dashboard-card sos-card">
-
-            <div className="card-header">
-
-              <div>
-                <h3>Recent SOS Alerts</h3>
-                <p>
-                  Latest emergency alerts from tourists
-                </p>
-              </div>
-
-              <a href="/admin/sos-alerts">
-                View All
-              </a>
-
-            </div>
-
-
-            <div className="alert-list">
-
-              {/* ALERT 1 */}
-              <div className="alert-item">
-
-                <div className="alert-icon">
-                  <Siren size={19} />
-                </div>
-
-                <div className="alert-info">
-                  <strong>Emergency SOS</strong>
-                  <span>Tourist ID: TS1024</span>
-                  <small>2 minutes ago</small>
-                </div>
-
-                <span className="status danger">
-                  Active
-                </span>
-
-              </div>
-
-
-              {/* ALERT 2 */}
-              <div className="alert-item">
-
-                <div className="alert-icon">
-                  <Siren size={19} />
-                </div>
-
-                <div className="alert-info">
-                  <strong>Emergency SOS</strong>
-                  <span>Tourist ID: TS0987</span>
-                  <small>18 minutes ago</small>
-                </div>
-
-                <span className="status warning-status">
-                  Responding
-                </span>
-
-              </div>
-
-
-              {/* ALERT 3 */}
-              <div className="alert-item">
-
-                <div className="alert-icon">
-                  <Siren size={19} />
-                </div>
-
-                <div className="alert-info">
-                  <strong>Emergency SOS</strong>
-                  <span>Tourist ID: TS1145</span>
-                  <small>42 minutes ago</small>
-                </div>
-
-                <span className="status resolved">
-                  Resolved
-                </span>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-          {/* ================= SYSTEM OVERVIEW ================= */}
-          <div className="dashboard-card">
-
-            <div className="card-header">
-
-              <div>
-                <h3>System Overview</h3>
-                <p>
-                  Current safety monitoring status
-                </p>
-              </div>
-
-            </div>
-
-
-            <div className="system-list">
-
-              {/* LOCATION TRACKING */}
-              <div className="system-item">
-
-                <div className="system-left">
-
-                  <div className="system-icon green">
-                    <CheckCircle size={19} />
-                  </div>
-
-                  <span>Location Tracking</span>
-
-                </div>
-
-                <strong className="online">
-                  Online
-                </strong>
-
-              </div>
-
-
-              {/* GEO-FENCING */}
-              <div className="system-item">
-
-                <div className="system-left">
-
-                  <div className="system-icon green">
-                    <CheckCircle size={19} />
-                  </div>
-
-                  <span>Geo-Fencing</span>
-
-                </div>
-
-                <strong className="online">
-                  Active
-                </strong>
-
-              </div>
-
-
-              {/* EMERGENCY SERVICES */}
-              <div className="system-item">
-
-                <div className="system-left">
-
-                  <div className="system-icon warning-icon">
-                    <AlertTriangle size={19} />
-                  </div>
-
-                  <span>Emergency Services</span>
-
-                </div>
-
-                <strong className="monitoring">
-                  Monitoring
-                </strong>
-
-              </div>
-
-
-              {/* DATABASE */}
-              <div className="system-item">
-
-                <div className="system-left">
-
-                  <div className="system-icon green">
-                    <CheckCircle size={19} />
-                  </div>
-
-                  <span>Database</span>
-
-                </div>
-
-                <strong className="online">
-                  Connected
-                </strong>
-
-              </div>
 
             </div>
 
@@ -332,128 +495,399 @@ const AdminDashboard = () => {
         </section>
 
 
-        {/* ================= TOURIST ACTIVITY ================= */}
+        {/* =================================================
+            LIVE TOURISTS
+        ================================================= */}
+
         <section className="dashboard-card activity-card">
 
           <div className="card-header">
 
             <div>
-              <h3>Recent Tourist Activity</h3>
+
+              <h3>
+                Online Tourists
+              </h3>
+
               <p>
-                Latest registered and active tourists
+                Tourists currently sharing their live location
               </p>
+
             </div>
 
-            <a href="/admin/tourists">
-              View All
-            </a>
+
+            <div
+              className="live-indicator"
+              title="Live data refreshes every 3 seconds"
+            >
+
+              <span className="live-dot"></span>
+
+              Live
+
+            </div>
 
           </div>
 
 
-          <div className="table-wrapper">
+          {/* NO ONLINE TOURISTS */}
 
-            <table>
+          {!loading &&
+            activeTourists.length === 0 && (
 
-              <thead>
-                <tr>
-                  <th>Tourist ID</th>
-                  <th>Name</th>
-                  <th>Location</th>
-                  <th>Status</th>
-                  <th>Last Active</th>
-                </tr>
-              </thead>
+              <div className="empty-state">
 
-              <tbody>
+                <MapPin size={35} />
 
-                <tr>
-                  <td>
-                    <strong>TS1024</strong>
-                  </td>
+                <h3>
+                  No tourists online
+                </h3>
 
-                  <td>Rahul Sharma</td>
+                <p>
+                  When a tourist clicks
+                  <strong> Start Tour </strong>
+                  their live location will appear here.
+                </p>
 
-                  <td>Mumbai</td>
+              </div>
 
-                  <td>
-                    <span className="table-status active-status">
-                      Active
-                    </span>
-                  </td>
-
-                  <td>2 min ago</td>
-                </tr>
+            )}
 
 
-                <tr>
-                  <td>
-                    <strong>TS0987</strong>
-                  </td>
+          {/* ONLINE TOURISTS */}
 
-                  <td>Priya Patil</td>
+          {activeTourists.length > 0 && (
 
-                  <td>Goa</td>
+            <div className="table-wrapper">
 
-                  <td>
-                    <span className="table-status active-status">
-                      Active
-                    </span>
-                  </td>
+              <table>
 
-                  <td>8 min ago</td>
-                </tr>
+                <thead>
+
+                  <tr>
+
+                    <th>
+                      Tourist ID
+                    </th>
+
+                    <th>
+                      Name
+                    </th>
+
+                    <th>
+                      Latitude
+                    </th>
+
+                    <th>
+                      Longitude
+                    </th>
+
+                    <th>
+                      Accuracy
+                    </th>
+
+                    <th>
+                      Status
+                    </th>
+
+                    <th>
+                      Last Update
+                    </th>
+
+                  </tr>
+
+                </thead>
 
 
-                <tr>
-                  <td>
-                    <strong>TS1145</strong>
-                  </td>
+                <tbody>
 
-                  <td>Arjun Mehta</td>
+                  {activeTourists.map(
+                    (tourist) => (
 
-                  <td>Pune</td>
+                      <tr
+                        key={tourist.id}
+                      >
 
-                  <td>
-                    <span className="table-status offline-status">
-                      Offline
-                    </span>
-                  </td>
+                        <td>
 
-                  <td>35 min ago</td>
-                </tr>
+                          <strong>
+                            {tourist.tourist_id}
+                          </strong>
+
+                        </td>
 
 
-                <tr>
-                  <td>
-                    <strong>TS1210</strong>
-                  </td>
+                        <td>
+                          {tourist.full_name}
+                        </td>
 
-                  <td>Neha Joshi</td>
 
-                  <td>Manali</td>
+                        <td>
 
-                  <td>
-                    <span className="table-status active-status">
-                      Active
-                    </span>
-                  </td>
+                          {Number(
+                            tourist.latitude
+                          ).toFixed(6)}
 
-                  <td>4 min ago</td>
-                </tr>
+                        </td>
 
-              </tbody>
 
-            </table>
+                        <td>
 
-          </div>
+                          {Number(
+                            tourist.longitude
+                          ).toFixed(6)}
+
+                        </td>
+
+
+                        <td>
+
+                          {tourist.accuracy
+                            ? `${Math.round(
+                                tourist.accuracy
+                              )} m`
+                            : "N/A"}
+
+                        </td>
+
+
+                        <td>
+
+                          <span
+                            className="table-status active-status"
+                          >
+                            Online
+                          </span>
+
+                        </td>
+
+
+                        <td>
+
+                          {formatTime(
+                            tourist.updated_at
+                          )}
+
+                        </td>
+
+                      </tr>
+
+                    )
+                  )}
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          )}
 
         </section>
+
+
+        {/* =================================================
+            ALL TOURISTS
+        ================================================= */}
+
+        <section className="dashboard-card activity-card">
+
+          <div className="card-header">
+
+            <div>
+
+              <h3>
+                Tourist Activity
+              </h3>
+
+              <p>
+                Registered tourists and tracking status
+              </p>
+
+            </div>
+
+          </div>
+
+
+          {loading ? (
+
+            <div className="empty-state">
+
+              <RefreshCw size={30} />
+
+              <p>
+                Loading tourist data...
+              </p>
+
+            </div>
+
+          ) : tourists.length === 0 ? (
+
+            <div className="empty-state">
+
+              <Users size={35} />
+
+              <h3>
+                No tourists registered
+              </h3>
+
+            </div>
+
+          ) : (
+
+            <div className="table-wrapper">
+
+              <table>
+
+                <thead>
+
+                  <tr>
+
+                    <th>
+                      Tourist ID
+                    </th>
+
+                    <th>
+                      Name
+                    </th>
+
+                    <th>
+                      Email
+                    </th>
+
+                    <th>
+                      Location
+                    </th>
+
+                    <th>
+                      Status
+                    </th>
+
+                    <th>
+                      Last Active
+                    </th>
+
+                  </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                  {tourists.map(
+                    (tourist) => {
+
+                      const online =
+                        isTouristOnline(
+                          tourist
+                        );
+
+
+                      return (
+
+                        <tr
+                          key={tourist.id}
+                        >
+
+                          <td>
+
+                            <strong>
+                              {tourist.tourist_id}
+                            </strong>
+
+                          </td>
+
+
+                          <td>
+                            {tourist.full_name}
+                          </td>
+
+
+                          <td>
+                            {tourist.email}
+                          </td>
+
+
+                          <td>
+
+                            {tourist.latitude !== null &&
+                            tourist.longitude !== null ? (
+
+                              <span>
+
+                                {Number(
+                                  tourist.latitude
+                                ).toFixed(4)}
+
+                                {" , "}
+
+                                {Number(
+                                  tourist.longitude
+                                ).toFixed(4)}
+
+                              </span>
+
+                            ) : (
+
+                              <span>
+                                No location
+                              </span>
+
+                            )}
+
+                          </td>
+
+
+                          <td>
+
+                            <span
+                              className={
+                                online
+                                  ? "table-status active-status"
+                                  : "table-status offline-status"
+                              }
+                            >
+
+                              {online
+                                ? "Online"
+                                : "Offline"}
+
+                            </span>
+
+                          </td>
+
+
+                          <td>
+
+                            {formatTime(
+                              tourist.location_updated_at
+                            )}
+
+                          </td>
+
+                        </tr>
+
+                      );
+
+                    }
+                  )}
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          )}
+
+        </section>
+
 
       </main>
 
     </div>
   );
 };
+
 
 export default AdminDashboard;

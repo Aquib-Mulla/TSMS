@@ -206,6 +206,8 @@
 
   .register-card {
     padding: 25px 20px;
+    box-shadow: none;
+    background-color: #f5f7f7;
   }
 }
 
@@ -398,9 +400,14 @@
   .login-page {
     padding: 15px;
   }
-
+  .register-header h1,
+  .login-header h1{
+    margin: 0 0 5px
+  }
   .login-card {
     padding: 25px 20px;
+    box-shadow: none;
+    background-color: #f5f7f7;
   }
 }
 

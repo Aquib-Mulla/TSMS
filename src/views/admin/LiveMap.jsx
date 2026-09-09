@@ -1,4 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 
 import {
   APIProvider,
@@ -32,240 +36,533 @@ const DEFAULT_LOCATION = {
 
 
 // =====================================================
+// BACKEND API
+// =====================================================
+
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "http://localhost:5000";
+
+
+// =====================================================
 // TOURIST MARKER
 // =====================================================
 
-const TouristMarker = ({ safety }) => {
+const TouristMarker = ({
+  safety,
+}) => {
 
-  let background = "#0f766e";
+  let background =
+    "#0f766e";
 
-  if (safety === "Warning") {
-    background = "#f59e0b";
+
+  if (
+    safety === "Warning"
+  ) {
+
+    background =
+      "#f59e0b";
+
   }
 
-  if (safety === "Danger") {
-    background = "#dc2626";
+
+  if (
+    safety === "Danger"
+  ) {
+
+    background =
+      "#dc2626";
+
   }
+
 
   return (
+
     <div
       style={{
+
         width: "38px",
+
         height: "38px",
+
         borderRadius: "50%",
-        background: background,
-        border: "3px solid #ffffff",
-        boxShadow: "0 3px 12px rgba(0,0,0,0.25)",
+
+        background,
+
+        border:
+          "3px solid #ffffff",
+
+        boxShadow:
+          "0 3px 12px rgba(0,0,0,0.25)",
+
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#ffffff",
+
+        alignItems:
+          "center",
+
+        justifyContent:
+          "center",
+
+        color:
+          "#ffffff",
+
         fontWeight: "700",
+
         fontSize: "13px",
+
         cursor: "pointer",
+
       }}
     >
+
       T
+
     </div>
+
   );
+
 };
 
 
 // =====================================================
-// LIVE MAP
+// FORMAT LAST UPDATED
+// =====================================================
+
+const formatLastUpdated = (
+  date
+) => {
+
+  if (!date) {
+
+    return "Unknown";
+
+  }
+
+
+  const updated =
+    new Date(date);
+
+  const now =
+    new Date();
+
+
+  const difference =
+    Math.floor(
+      (
+        now.getTime() -
+        updated.getTime()
+      ) / 1000
+    );
+
+
+  if (
+    difference < 5
+  ) {
+
+    return "Just now";
+
+  }
+
+
+  if (
+    difference < 60
+  ) {
+
+    return `${difference} seconds ago`;
+
+  }
+
+
+  const minutes =
+    Math.floor(
+      difference / 60
+    );
+
+
+  if (
+    minutes < 60
+  ) {
+
+    return `${minutes} minute${
+      minutes !== 1
+        ? "s"
+        : ""
+    } ago`;
+
+  }
+
+
+  const hours =
+    Math.floor(
+      minutes / 60
+    );
+
+
+  return `${hours} hour${
+    hours !== 1
+      ? "s"
+      : ""
+  } ago`;
+
+};
+
+
+// =====================================================
+// MAIN COMPONENT
 // =====================================================
 
 const LiveMap = () => {
 
-  // ===================================================
-  // DEMO TOURISTS
-  // ===================================================
-
-  const [tourists, setTourists] = useState([
-
-    {
-      id: 1,
-      name: "Rahul Sharma",
-      email: "rahul@gmail.com",
-      mobile: "+91 9876543210",
-      latitude: 19.0760,
-      longitude: 72.8777,
-      location: "Gateway of India",
-      safety: "Safe",
-      lastUpdated: "Just now",
-    },
-
-    {
-      id: 2,
-      name: "Priya Patil",
-      email: "priya@gmail.com",
-      mobile: "+91 9823456712",
-      latitude: 19.0820,
-      longitude: 72.8850,
-      location: "Marine Drive",
-      safety: "Safe",
-      lastUpdated: "10 seconds ago",
-    },
-
-    {
-      id: 3,
-      name: "Sneha Kulkarni",
-      email: "sneha@gmail.com",
-      mobile: "+91 9988776655",
-      latitude: 19.0890,
-      longitude: 72.8920,
-      location: "Juhu Beach",
-      safety: "Warning",
-      lastUpdated: "20 seconds ago",
-    },
-
-    {
-      id: 4,
-      name: "Aman Khan",
-      email: "aman@gmail.com",
-      mobile: "+91 9898989898",
-      latitude: 19.0650,
-      longitude: 72.8680,
-      location: "Bandra",
-      safety: "Danger",
-      lastUpdated: "5 seconds ago",
-    },
-
-  ]);
-
 
   // ===================================================
-  // STATES
+  // TOURISTS
   // ===================================================
 
-  const [search, setSearch] = useState("");
-
-  const [selectedTourist, setSelectedTourist] =
-    useState(null);
-
-  const [loading, setLoading] = useState(false);
-
-
-  // ===================================================
-  // REFRESH
-  // ===================================================
-
-  const fetchLiveLocations = async () => {
-
-    try {
-
-      setLoading(true);
-
-      /*
-        ===============================================
-        BACKEND WILL BE CONNECTED LATER
-
-        const response = await fetch(
-          "http://localhost:5000/api/admin/live-locations"
-        );
-
-        const data = await response.json();
-
-        setTourists(data.users);
-
-        ===============================================
-      */
-
-      await new Promise((resolve) =>
-        setTimeout(resolve, 300)
-      );
-
-    } catch (error) {
-
-      console.error(
-        "Error fetching live locations:",
-        error
-      );
-
-    } finally {
-
-      setLoading(false);
-
-    }
-
-  };
-
-
-  // ===================================================
-  // INITIAL REFRESH
-  // ===================================================
-
-  useEffect(() => {
-
-    fetchLiveLocations();
-
-  }, []);
+  const [tourists, setTourists] =
+    useState([]);
 
 
   // ===================================================
   // SEARCH
   // ===================================================
 
-  const filteredTourists = tourists.filter(
-    (tourist) => {
+  const [search, setSearch] =
+    useState("");
 
-      const value = search.toLowerCase();
 
-      return (
+  // ===================================================
+  // SELECTED TOURIST
+  // ===================================================
 
-        tourist.name
-          .toLowerCase()
-          .includes(value)
+  const [
+    selectedTourist,
+    setSelectedTourist,
+  ] = useState(null);
 
-        ||
 
-        tourist.email
-          .toLowerCase()
-          .includes(value)
+  // ===================================================
+  // LOADING
+  // ===================================================
 
-        ||
+  const [loading, setLoading] =
+    useState(false);
 
-        tourist.location
-          .toLowerCase()
-          .includes(value)
 
+  // ===================================================
+  // ERROR
+  // ===================================================
+
+  const [error, setError] =
+    useState("");
+
+
+  // ===================================================
+  // FETCH ACTIVE TOURISTS
+  // ===================================================
+
+  const fetchLiveLocations =
+    useCallback(
+      async () => {
+
+        try {
+
+          setLoading(true);
+
+          setError("");
+
+
+          const response =
+            await fetch(
+              `${API_URL}/api/location/active`
+            );
+
+
+          if (!response.ok) {
+
+            throw new Error(
+              `Server returned ${response.status}`
+            );
+
+          }
+
+
+          const data =
+            await response.json();
+
+
+          if (!data.success) {
+
+            throw new Error(
+              data.message ||
+              "Unable to fetch tourists"
+            );
+
+          }
+
+
+// =========================================
+// FORMAT DATABASE DATA
+// =========================================
+const formattedTourists =
+  (data.tourists || []).map(
+    (tourist) => ({
+      id: tourist.id,
+
+      touristId:
+        tourist.tourist_id,
+
+      name:
+        tourist.full_name,
+
+      email:
+        tourist.email,
+
+      mobile:
+        tourist.phone,
+
+      latitude:
+        Number(
+          tourist.latitude
+        ),
+
+      longitude:
+        Number(
+          tourist.longitude
+        ),
+
+      accuracy:
+        tourist.accuracy !== null &&
+        tourist.accuracy !== undefined
+          ? Number(
+              tourist.accuracy
+            )
+          : null,
+
+      safety:
+        "Safe",
+
+      lastUpdated:
+        formatLastUpdated(
+          tourist.updated_at
+        ),
+
+      updatedAt:
+        tourist.updated_at,
+
+      isTracking:
+        tourist.is_tracking === 1 ||
+        tourist.is_tracking === true,
+
+      isOnline:
+        tourist.is_online === 1 ||
+        tourist.is_online === true,
+    })
+  );
+
+          setTourists(
+            formattedTourists
+          );
+
+
+          // =========================================
+          // UPDATE SELECTED TOURIST
+          // =========================================
+
+          setSelectedTourist(
+            (currentSelected) => {
+
+              if (
+                !currentSelected
+              ) {
+
+                return null;
+
+              }
+
+
+              const updated =
+                formattedTourists.find(
+                  (tourist) =>
+                    tourist.id ===
+                    currentSelected.id
+                );
+
+
+              return (
+                updated ||
+                null
+              );
+
+            }
+          );
+
+
+        } catch (fetchError) {
+
+          console.error(
+            "Error fetching live locations:",
+            fetchError
+          );
+
+
+          setError(
+            "Unable to connect to the backend."
+          );
+
+
+        } finally {
+
+          setLoading(false);
+
+        }
+
+      },
+      []
+    );
+
+
+  // ===================================================
+  // INITIAL FETCH
+  // ===================================================
+
+  useEffect(() => {
+
+    fetchLiveLocations();
+
+  }, [
+    fetchLiveLocations,
+  ]);
+
+
+  // ===================================================
+  // AUTO REFRESH
+  // ===================================================
+
+  useEffect(() => {
+
+    const interval =
+      setInterval(
+        () => {
+
+          fetchLiveLocations();
+
+        },
+        5000
       );
 
-    }
-  );
+
+    return () => {
+
+      clearInterval(
+        interval
+      );
+
+    };
+
+  }, [
+    fetchLiveLocations,
+  ]);
+
+
+  // ===================================================
+  // SEARCH
+  // ===================================================
+
+const onlineTourists = tourists.filter(
+  (tourist) => tourist.isOnline
+);
+
+const filteredTourists =
+  onlineTourists.filter(
+    (tourist) => {
+
+        const value =
+          search
+            .toLowerCase()
+            .trim();
+
+
+        if (!value) {
+
+          return true;
+
+        }
+
+
+        return (
+
+          tourist.name
+            ?.toLowerCase()
+            .includes(value)
+
+          ||
+
+          tourist.email
+            ?.toLowerCase()
+            .includes(value)
+
+          ||
+
+          tourist.touristId
+            ?.toLowerCase()
+            .includes(value)
+
+          ||
+
+          tourist.mobile
+            ?.toLowerCase()
+            .includes(value)
+
+        );
+
+      }
+    );
 
 
   // ===================================================
   // STATISTICS
   // ===================================================
 
-  const totalTourists = tourists.length;
+  const totalTourists =
+    tourists.length;
 
-  const safeTourists = tourists.filter(
-    (tourist) =>
-      tourist.safety === "Safe"
-  ).length;
 
-  const warningTourists = tourists.filter(
-    (tourist) =>
-      tourist.safety === "Warning"
-  ).length;
+  const safeTourists =
+    tourists.filter(
+      (tourist) =>
+        tourist.safety ===
+        "Safe"
+    ).length;
 
-  const dangerTourists = tourists.filter(
-    (tourist) =>
-      tourist.safety === "Danger"
-  ).length;
+
+  const warningTourists =
+    tourists.filter(
+      (tourist) =>
+        tourist.safety ===
+        "Warning"
+    ).length;
+
+
+  const dangerTourists =
+    tourists.filter(
+      (tourist) =>
+        tourist.safety ===
+        "Danger"
+    ).length;
 
 
   // ===================================================
   // SELECT TOURIST
   // ===================================================
 
-  const handleSelectTourist = (tourist) => {
+  const handleSelectTourist =
+    (tourist) => {
 
-    setSelectedTourist(tourist);
+      setSelectedTourist(
+        tourist
+      );
 
-  };
+    };
 
 
   // ===================================================
@@ -276,6 +573,7 @@ const LiveMap = () => {
 
     <div className="admin-layout">
 
+
       {/* =================================================
           SIDEBAR
       ================================================= */}
@@ -284,7 +582,7 @@ const LiveMap = () => {
 
 
       {/* =================================================
-          MAIN CONTENT
+          MAIN
       ================================================= */}
 
       <main className="admin-main">
@@ -314,7 +612,12 @@ const LiveMap = () => {
 
             <button
               className="refresh-map-btn"
-              onClick={fetchLiveLocations}
+              onClick={
+                fetchLiveLocations
+              }
+              disabled={
+                loading
+              }
             >
 
               <RefreshCw
@@ -326,11 +629,50 @@ const LiveMap = () => {
                 }
               />
 
-              Refresh
+              {loading
+                ? "Refreshing..."
+                : "Refresh"}
 
             </button>
 
           </div>
+
+
+          {/* =================================================
+              ERROR
+          ================================================= */}
+
+          {error && (
+
+            <div
+              style={{
+
+                marginBottom:
+                  "15px",
+
+                padding:
+                  "12px 16px",
+
+                borderRadius:
+                  "8px",
+
+                background:
+                  "#ffffff",
+
+                border:
+                  "1px solid #000000",
+
+                color:
+                  "#000000",
+
+              }}
+            >
+
+              {error}
+
+            </div>
+
+          )}
 
 
           {/* =================================================
@@ -346,7 +688,9 @@ const LiveMap = () => {
 
               <div className="map-stat-icon">
 
-                <Users size={20} />
+                <Users
+                  size={20}
+                />
 
               </div>
 
@@ -371,7 +715,9 @@ const LiveMap = () => {
 
               <div className="map-stat-icon">
 
-                <ShieldCheck size={20} />
+                <ShieldCheck
+                  size={20}
+                />
 
               </div>
 
@@ -396,7 +742,9 @@ const LiveMap = () => {
 
               <div className="map-stat-icon">
 
-                <ShieldAlert size={20} />
+                <ShieldAlert
+                  size={20}
+                />
 
               </div>
 
@@ -421,7 +769,9 @@ const LiveMap = () => {
 
               <div className="map-stat-icon">
 
-                <ShieldAlert size={20} />
+                <ShieldAlert
+                  size={20}
+                />
 
               </div>
 
@@ -443,14 +793,14 @@ const LiveMap = () => {
 
 
           {/* =================================================
-              MAP CONTAINER
+              MAP
           ================================================= */}
 
           <div className="live-map-container">
 
 
             {/* =================================================
-                SEARCH + TOURIST LIST
+                SEARCH PANEL
             ================================================= */}
 
             <div className="map-search-panel">
@@ -460,31 +810,38 @@ const LiveMap = () => {
 
               <div className="map-search">
 
-                <Search size={18} />
+                <Search
+                  size={18}
+                />
 
                 <input
                   type="text"
                   placeholder="Search tourist..."
                   value={search}
                   onChange={(e) =>
-                    setSearch(e.target.value)
+                    setSearch(
+                      e.target.value
+                    )
                   }
                 />
 
               </div>
 
 
-              {/* USER LIST */}
+              {/* TOURIST LIST */}
 
               <div className="map-user-list">
 
-                {filteredTourists.length > 0 ? (
+                {filteredTourists.length >
+                0 ? (
 
                   filteredTourists.map(
                     (tourist) => (
 
                       <button
-                        key={tourist.id}
+                        key={
+                          tourist.id
+                        }
                         className={
                           `map-user-item ${
                             selectedTourist?.id ===
@@ -508,17 +865,24 @@ const LiveMap = () => {
                           }
                         />
 
+
                         <div className="map-user-info">
 
                           <strong>
-                            {tourist.name}
+                            {
+                              tourist.name
+                            }
                           </strong>
 
                           <span>
 
-                            <MapPin size={12} />
+                            <MapPin
+                              size={12}
+                            />
 
-                            {tourist.location}
+                            {
+                              tourist.touristId
+                            }
 
                           </span>
 
@@ -533,12 +897,23 @@ const LiveMap = () => {
 
                   <div
                     style={{
-                      padding: "20px",
-                      textAlign: "center",
-                      color: "#777",
+
+                      padding:
+                        "20px",
+
+                      textAlign:
+                        "center",
+
+                      color:
+                        "#000000",
+
                     }}
                   >
-                    No tourists found
+
+                    {loading
+                      ? "Loading tourists..."
+                      : "No active tourists"}
+
                   </div>
 
                 )}
@@ -567,21 +942,33 @@ const LiveMap = () => {
                   DEFAULT_LOCATION
                 }
 
-                defaultZoom={13}
+                defaultZoom={
+                  13
+                }
 
                 mapId="DEMO_MAP_ID"
 
                 gestureHandling="greedy"
 
-                disableDefaultUI={false}
+                disableDefaultUI={
+                  false
+                }
 
-                zoomControl={true}
+                zoomControl={
+                  true
+                }
 
-                streetViewControl={true}
+                streetViewControl={
+                  true
+                }
 
-                fullscreenControl={true}
+                fullscreenControl={
+                  true
+                }
 
-                mapTypeControl={true}
+                mapTypeControl={
+                  true
+                }
 
               >
 
@@ -591,158 +978,227 @@ const LiveMap = () => {
                 ========================================= */}
 
                 {filteredTourists.map(
-                  (tourist) => (
+                  (tourist) => {
 
-                    <React.Fragment
-                      key={tourist.id}
-                    >
+                    if (
+                      !Number.isFinite(
+                        tourist.latitude
+                      ) ||
+                      !Number.isFinite(
+                        tourist.longitude
+                      )
+                    ) {
 
-                      <AdvancedMarker
+                      return null;
 
-                        position={{
-                          lat:
-                            Number(
-                              tourist.latitude
-                            ),
+                    }
 
-                          lng:
-                            Number(
-                              tourist.longitude
-                            ),
-                        }}
 
-                        title={
-                          tourist.name
-                        }
+                    return (
 
-                        onClick={() =>
-                          handleSelectTourist(
-                            tourist
-                          )
+                      <React.Fragment
+                        key={
+                          tourist.id
                         }
                       >
 
-                        <TouristMarker
-                          safety={
-                            tourist.safety
-                          }
-                        />
 
-                      </AdvancedMarker>
+                        {/* ===================================
+                            MARKER
+                        =================================== */}
 
-
-                      {/* ===================================
-                          INFO WINDOW
-                      =================================== */}
-
-                      {selectedTourist?.id ===
-                        tourist.id && (
-
-                        <InfoWindow
+                        <AdvancedMarker
 
                           position={{
                             lat:
-                              Number(
-                                tourist.latitude
-                              ),
+                              tourist.latitude,
 
                             lng:
-                              Number(
-                                tourist.longitude
-                              ),
+                              tourist.longitude,
                           }}
 
-                          onCloseClick={() =>
-                            setSelectedTourist(
-                              null
+                          title={
+                            tourist.name
+                          }
+
+                          onClick={() =>
+                            handleSelectTourist(
+                              tourist
                             )
                           }
                         >
 
-                          <div
-                            className="map-popup"
-                            style={{
-                              minWidth:
-                                "220px",
+                          <TouristMarker
+                            safety={
+                              tourist.safety
+                            }
+                          />
+
+                        </AdvancedMarker>
+
+
+                        {/* ===================================
+                            INFO WINDOW
+                        =================================== */}
+
+                        {selectedTourist?.id ===
+                          tourist.id && (
+
+                          <InfoWindow
+
+                            position={{
+                              lat:
+                                tourist.latitude,
+
+                              lng:
+                                tourist.longitude,
                             }}
+
+                            onCloseClick={() =>
+                              setSelectedTourist(
+                                null
+                              )
+                            }
                           >
 
-                            <h3>
-                              {tourist.name}
-                            </h3>
-
-
-                            <p>
-                              {tourist.email}
-                            </p>
-
-
                             <div
-                              className={
-                                `popup-safety ${
-                                  tourist.safety.toLowerCase()
-                                }`
-                              }
+                              className="map-popup"
+                              style={{
+
+                                minWidth:
+                                  "240px",
+
+                                color:
+                                  "#000000",
+
+                              }}
                             >
-                              {tourist.safety}
+
+                              <h3>
+                                {
+                                  tourist.name
+                                }
+                              </h3>
+
+
+                              <p>
+
+                                <strong>
+                                  Tourist ID
+                                </strong>
+
+                                <br />
+
+                                {
+                                  tourist.touristId
+                                }
+
+                              </p>
+
+
+                              <p>
+                                {
+                                  tourist.email
+                                }
+                              </p>
+
+
+                              <p>
+                                {
+                                  tourist.mobile
+                                }
+                              </p>
+
+
+                              <div
+                                className={
+                                  `popup-safety ${
+                                    tourist.safety.toLowerCase()
+                                  }`
+                                }
+                              >
+
+                                {
+                                  tourist.safety
+                                }
+
+                              </div>
+
+
+                              <p>
+
+                                <strong>
+                                  Coordinates
+                                </strong>
+
+                                <br />
+
+                                {
+                                  tourist.latitude.toFixed(
+                                    6
+                                  )
+                                }
+
+                                {" , "}
+
+                                {
+                                  tourist.longitude.toFixed(
+                                    6
+                                  )
+                                }
+
+                              </p>
+
+
+                              {tourist.accuracy !==
+                                null && (
+
+                                <p>
+
+                                  <strong>
+                                    Accuracy
+                                  </strong>
+
+                                  <br />
+
+                                  ±
+                                  {
+                                    tourist.accuracy.toFixed(
+                                      1
+                                    )
+                                  }
+                                  {" meters"}
+
+                                </p>
+
+                              )}
+
+
+                              <p>
+
+                                <strong>
+                                  Last Updated
+                                </strong>
+
+                                <br />
+
+                                {
+                                  tourist.lastUpdated
+                                }
+
+                              </p>
+
                             </div>
 
+                          </InfoWindow>
 
-                            <p>
+                        )}
 
-                              <strong>
-                                Location
-                              </strong>
+                      </React.Fragment>
 
-                              <br />
+                    );
 
-                              {tourist.location}
-
-                            </p>
-
-
-                            <p>
-
-                              <strong>
-                                Coordinates
-                              </strong>
-
-                              <br />
-
-                              {Number(
-                                tourist.latitude
-                              ).toFixed(6)}
-
-                              {" , "}
-
-                              {Number(
-                                tourist.longitude
-                              ).toFixed(6)}
-
-                            </p>
-
-
-                            <p>
-
-                              <strong>
-                                Last Updated
-                              </strong>
-
-                              <br />
-
-                              {tourist.lastUpdated}
-
-                            </p>
-
-                          </div>
-
-                        </InfoWindow>
-
-                      )}
-
-                    </React.Fragment>
-
-                  )
+                  }
                 )}
 
               </Map>

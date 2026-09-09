@@ -9,7 +9,6 @@ const pool = require("../config/database");
 // ==================================================
 
 router.post("/start", async (req, res) => {
-
     try {
 
         const {
@@ -19,20 +18,29 @@ router.post("/start", async (req, res) => {
             accuracy
         } = req.body;
 
+        console.log("=================================");
+        console.log("START TOUR REQUEST");
+        console.log("userId:", userId);
+        console.log("latitude:", latitude);
+        console.log("longitude:", longitude);
+        console.log("accuracy:", accuracy);
+        console.log("=================================");
+
+
+        // Validate data
         if (
             !userId ||
             latitude === undefined ||
             longitude === undefined
         ) {
-
             return res.status(400).json({
                 success: false,
                 message: "userId, latitude and longitude are required"
             });
-
         }
 
 
+        // Check whether location already exists
         const [existing] = await pool.query(
             `SELECT id
              FROM tourist_locations
@@ -41,25 +49,41 @@ router.post("/start", async (req, res) => {
         );
 
 
+        // ============================================
+        // EXISTING TOURIST
+        // ============================================
+
         if (existing.length > 0) {
 
             await pool.query(
                 `UPDATE tourist_locations
-                 SET latitude = ?,
-                     longitude = ?,
-                     accuracy = ?,
-                     is_tracking = TRUE,
-                     updated_at = CURRENT_TIMESTAMP
+                 SET
+                    latitude = ?,
+                    longitude = ?,
+                    accuracy = ?,
+                    is_tracking = 1,
+                    updated_at = CURRENT_TIMESTAMP
                  WHERE user_id = ?`,
                 [
                     latitude,
                     longitude,
-                    accuracy || null,
+                    accuracy ?? null,
                     userId
                 ]
             );
 
-        } else {
+            console.log(
+                "Location updated for user:",
+                userId
+            );
+
+        }
+
+        // ============================================
+        // NEW TOURIST LOCATION
+        // ============================================
+
+        else {
 
             await pool.query(
                 `INSERT INTO tourist_locations
@@ -70,40 +94,52 @@ router.post("/start", async (req, res) => {
                     accuracy,
                     is_tracking
                 )
-                VALUES (?, ?, ?, ?, TRUE)`,
+                VALUES (?, ?, ?, ?, 1)`,
                 [
                     userId,
                     latitude,
                     longitude,
-                    accuracy || null
+                    accuracy ?? null
                 ]
             );
 
+            console.log(
+                "Location inserted for user:",
+                userId
+            );
         }
 
 
-        res.json({
+        // ============================================
+        // SUCCESS
+        // ============================================
+
+        res.status(200).json({
+
             success: true,
+
             message: "Tour started successfully"
+
         });
 
 
     } catch (error) {
 
         console.error(
-            "Start tour error:",
+            "START TOUR ERROR:",
             error
         );
 
         res.status(500).json({
+
             success: false,
-            message: "Server error"
+
+            message: "Unable to start tour"
+
         });
 
     }
-
 });
-
 
 // ==================================================
 // UPDATE LOCATION
@@ -242,9 +278,7 @@ router.post("/stop", async (req, res) => {
 // ==================================================
 
 router.get("/active", async (req, res) => {
-
     try {
-
         const [rows] = await pool.query(
             `SELECT
                 u.id,
@@ -257,27 +291,29 @@ router.get("/active", async (req, res) => {
                 tl.longitude,
                 tl.accuracy,
                 tl.is_tracking,
-                tl.updated_at
+                tl.updated_at,
+
+                CASE
+                    WHEN tl.is_tracking = TRUE
+                    AND tl.updated_at >= NOW() - INTERVAL 30 SECOND
+                    THEN TRUE
+                    ELSE FALSE
+                END AS is_online
 
              FROM users u
 
              INNER JOIN tourist_locations tl
                 ON u.id = tl.user_id
 
-             WHERE tl.is_tracking = TRUE
-
              ORDER BY tl.updated_at DESC`
         );
-
 
         res.json({
             success: true,
             tourists: rows
         });
 
-
     } catch (error) {
-
         console.error(
             "Get active tourists error:",
             error
@@ -287,10 +323,7 @@ router.get("/active", async (req, res) => {
             success: false,
             message: "Server error"
         });
-
     }
-
 });
-
 
 module.exports = router;
