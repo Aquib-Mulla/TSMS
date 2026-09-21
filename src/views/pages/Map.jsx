@@ -5,658 +5,1584 @@ import React, {
   useState,
 } from "react";
 
-import {
-  APIProvider,
-  Map as GoogleMap,
-  AdvancedMarker,
-  useMap,
-} from "@vis.gl/react-google-maps";
+
+import * as maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
+
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
+
+maplibregl.setWorkerUrl(workerUrl);
 
 import {
-  PlayArrow,
-  Stop,
-  Warning,
-  Settings,
-  MyLocation,
-  Close,
-  LocationOn,
-  Security,
-  Emergency,
-  Map as MapIcon,
-  Satellite,
-  Terrain,
-} from "@mui/icons-material";
+  Search,
+  X,
+  MapPin,
+  Navigation,
+  LocateFixed,
+  Play,
+  Square,
+  AlertTriangle,
+  ShieldCheck,
+  ShieldAlert,
+  Clock,
+  Route as RouteIcon,
+  Layers,
+  Crosshair,
+  RefreshCw,
+} from "lucide-react";
 
 import "../../style/style.css";
-import Navbar from "../components/Navbar";
 
-// ======================================================
-// GOOGLE MAPS API KEY
-// ======================================================
+// ============================================================
+// API CONFIGURATION
+// ============================================================
 
-const GOOGLE_MAPS_API_KEY =
-  import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-// ======================================================
-// BACKEND API
-// ======================================================
-
-const API_URL = (
+const API_URL = 
   import.meta.env.VITE_API_URL ||
-  "http://localhost:5000"
-).replace(/\/$/, "");
+  "http://localhost:5000";
 
-// ======================================================
-// FALLBACK LOCATION
-// ======================================================
+// ============================================================
+// MAP CONFIGURATION
+// ============================================================
 
-const FALLBACK_LOCATION = {
+const MAP_STYLE =
+  "https://tiles.openfreemap.org/styles/liberty";
+
+const BRIGHT_MAP_STYLE =
+  "https://tiles.openfreemap.org/styles/bright";
+
+const NOMINATIM_URL =
+  "https://nominatim.openstreetmap.org/search";
+
+const OSRM_URL =
+  "https://router.project-osrm.org/route/v1";
+
+// ============================================================
+// DEFAULT LOCATION
+// ============================================================
+
+const DEFAULT_LOCATION = {
   lat: 19.076,
   lng: 72.8777,
-  accuracy: null,
 };
 
-// ======================================================
-// LOCATION HEARTBEAT
-//
-// Sends latest location to backend even if GPS does
-// not generate a new watchPosition event.
-// ======================================================
+// ============================================================
+// USER ID
+// ============================================================
 
-const LOCATION_HEARTBEAT_INTERVAL = 5000;
+function getStoredUserId() {
+  const keys = [
+    "userId",
+    "user_id",
+    "loggedInUser",
+    "user",
+  ];
 
-// ======================================================
-// GET LOGGED-IN USER ID
-// ======================================================
+  for (const key of keys) {
+    const value = localStorage.getItem(key);
 
-const getUserId = () => {
-  // ----------------------------------------------------
-  // 1. userId
-  // ----------------------------------------------------
-
-  const directUserId =
-    localStorage.getItem("userId");
-
-  if (directUserId) {
-    const id = Number(directUserId);
-
-    if (
-      Number.isInteger(id) &&
-      id > 0
-    ) {
-      return id;
+    if (!value) {
+      continue;
     }
-  }
 
-  // ----------------------------------------------------
-  // 2. user_id
-  // ----------------------------------------------------
-
-  const userId =
-    localStorage.getItem("user_id");
-
-  if (userId) {
-    const id = Number(userId);
-
-    if (
-      Number.isInteger(id) &&
-      id > 0
-    ) {
-      return id;
-    }
-  }
-
-  // ----------------------------------------------------
-  // 3. user object
-  // ----------------------------------------------------
-
-  const storedUser =
-    localStorage.getItem("user");
-
-  if (storedUser) {
     try {
-      const user =
-        JSON.parse(storedUser);
+      const parsed = JSON.parse(value);
 
-      if (user?.id) {
-        const id = Number(user.id);
-
-        if (
-          Number.isInteger(id) &&
-          id > 0
-        ) {
-          return id;
-        }
+      if (typeof parsed === "string") {
+        return parsed;
       }
 
-      if (user?.userId) {
-        const id =
-          Number(user.userId);
-
-        if (
-          Number.isInteger(id) &&
-          id > 0
-        ) {
-          return id;
-        }
-      }
-    } catch (error) {
-      console.error(
-        "Unable to parse stored user:",
-        error
-      );
-    }
-  }
-
-  // ----------------------------------------------------
-  // 4. loggedInUser object
-  // ----------------------------------------------------
-
-  const loggedInUser =
-    localStorage.getItem(
-      "loggedInUser"
-    );
-
-  if (loggedInUser) {
-    try {
-      const user =
-        JSON.parse(loggedInUser);
-
-      if (user?.id) {
-        const id = Number(user.id);
-
-        if (
-          Number.isInteger(id) &&
-          id > 0
-        ) {
-          return id;
-        }
+      if (parsed?.id) {
+        return parsed.id;
       }
 
-      if (user?.userId) {
-        const id =
-          Number(user.userId);
-
-        if (
-          Number.isInteger(id) &&
-          id > 0
-        ) {
-          return id;
-        }
+      if (parsed?.userId) {
+        return parsed.userId;
       }
-    } catch (error) {
-      console.error(
-        "Unable to parse loggedInUser:",
-        error
-      );
+
+      if (parsed?.user_id) {
+        return parsed.user_id;
+      }
+    } catch {
+      return value;
     }
   }
 
   return null;
-};
+}
 
-// ======================================================
-// CURRENT LOCATION MARKER
-// ======================================================
+// ============================================================
+// FORMAT DISTANCE
+// ============================================================
 
-const CurrentLocationMarker = ({
-  location,
-}) => {
-  if (!location) {
-    return null;
+function formatDistance(meters) {
+  if (
+    meters === null ||
+    meters === undefined ||
+    !Number.isFinite(meters)
+  ) {
+    return "--";
   }
 
-  return (
-    <AdvancedMarker
-      position={{
-        lat: location.lat,
-        lng: location.lng,
-      }}
-      title="Your Current Location"
-    >
-      <div className="current-location-marker">
-        <div className="location-accuracy-circle">
-          <div className="location-dot"></div>
-        </div>
-      </div>
-    </AdvancedMarker>
-  );
-};
+  if (meters < 1000) {
+    return `${Math.round(meters)} m`;
+  }
 
-// ======================================================
-// MAP CONTROLLER
-// ======================================================
+  return `${(meters / 1000).toFixed(2)} km`;
+}
 
-const MapController = ({
-  onMapReady,
-}) => {
-  const map = useMap();
+// ============================================================
+// FORMAT TIME
+// ============================================================
 
-  useEffect(() => {
-    if (map) {
-      console.log(
-        "TourSafe: Google Map loaded."
-      );
+function formatDuration(seconds) {
+  if (
+    seconds === null ||
+    seconds === undefined ||
+    !Number.isFinite(seconds)
+  ) {
+    return "--";
+  }
 
-      onMapReady(map);
-    }
-  }, [
-    map,
-    onMapReady,
-  ]);
+  const minutes = Math.round(seconds / 60);
 
-  return null;
-};
+  if (minutes < 1) {
+    return "Less than 1 min";
+  }
 
-// ======================================================
-// MAIN MAP COMPONENT
-// ======================================================
+  if (minutes < 60) {
+    return `${minutes} min`;
+  }
 
-const Map = () => {
+  const hours = Math.floor(minutes / 60);
 
-  // ====================================================
-  // LOCATION
-  // ====================================================
+  const remainingMinutes =
+    minutes % 60;
 
-  const [location, setLocation] =
+  if (remainingMinutes === 0) {
+    return `${hours} hr`;
+  }
+
+  return `${hours} hr ${remainingMinutes} min`;
+}
+
+// ============================================================
+// CALCULATE RISK
+// ============================================================
+
+function calculateRisk(accuracy) {
+  if (
+    accuracy === null ||
+    accuracy === undefined ||
+    !Number.isFinite(accuracy)
+  ) {
+    return 12;
+  }
+
+  if (accuracy > 100) {
+    return 35;
+  }
+
+  if (accuracy > 50) {
+    return 30;
+  }
+
+  if (accuracy > 30) {
+    return 22;
+  }
+
+  if (accuracy > 15) {
+    return 16;
+  }
+
+  return 12;
+}
+
+// ============================================================
+// MAIN COMPONENT
+// ============================================================
+
+export default function Map() {
+  // ==========================================================
+  // MAP REFS
+  // ==========================================================
+
+  const mapContainerRef =
+    useRef(null);
+
+  const mapRef =
+    useRef(null);
+
+  const userMarkerRef =
+    useRef(null);
+
+  const destinationMarkerRef =
+    useRef(null);
+
+  // ==========================================================
+  // GPS REFS
+  // ==========================================================
+
+  const watchIdRef =
+    useRef(null);
+
+  const heartbeatRef =
+    useRef(null);
+
+  const userLocationRef =
+    useRef(DEFAULT_LOCATION);
+
+  const lastAcceptedLocationRef =
+    useRef(null);
+
+  const lastAcceptedAccuracyRef =
+    useRef(Infinity);
+
+  const lastLocationTimeRef =
+    useRef(0);
+
+  // ==========================================================
+  // DESTINATION / ROUTE REFS
+  // ==========================================================
+
+  const destinationRef =
+    useRef(null);
+
+  const routeCoordinatesRef =
+    useRef([]);
+
+  // ==========================================================
+  // FOLLOW LOCATION REF
+  // ==========================================================
+
+  const followLocationRef =
+    useRef(true);
+
+  // ==========================================================
+  // STATE
+  // ==========================================================
+
+  const [mapReady, setMapReady] =
+    useState(false);
+
+  const [userLocation, setUserLocation] =
     useState(null);
 
-  const [locationError, setLocationError] =
+  const [accuracy, setAccuracy] =
+    useState(null);
+
+  const [searchText, setSearchText] =
     useState("");
 
-  const [locationLoading, setLocationLoading] =
-    useState(true);
+  const [searchResults, setSearchResults] =
+    useState([]);
 
-  // ====================================================
-  // TOUR
-  // ====================================================
+  const [searching, setSearching] =
+    useState(false);
+
+  const [showSearchResults, setShowSearchResults] =
+    useState(false);
+
+  const [destination, setDestination] =
+    useState(null);
 
   const [tourStarted, setTourStarted] =
     useState(false);
 
-  // ====================================================
-  // SOS
-  // ====================================================
-
-  const [sosActive, setSosActive] =
+  const [tracking, setTracking] =
     useState(false);
-
-  // ====================================================
-  // SETTINGS
-  // ====================================================
-
-  const [settingsOpen, setSettingsOpen] =
-    useState(false);
-
-  const [mapType, setMapType] =
-    useState("roadmap");
-
-  const [showLocation, setShowLocation] =
-    useState(true);
 
   const [followLocation, setFollowLocation] =
-    useState(false);
+    useState(true);
 
-  // ====================================================
-  // RISK
-  // ====================================================
-
-  const [riskPercentage, setRiskPercentage] =
+  const [risk, setRisk] =
     useState(12);
 
-  // ====================================================
-  // API ERROR
-  // ====================================================
+  const [distance, setDistance] =
+    useState(null);
 
-  const [apiError, setApiError] =
+  const [duration, setDuration] =
+    useState(null);
+
+  const [routeLoading, setRouteLoading] =
+    useState(false);
+
+  const [message, setMessage] =
     useState("");
 
-  // ====================================================
-  // BUTTON LOADING
-  // ====================================================
+  const [routeError, setRouteError] =
+    useState("");
 
-  const [startingTour, setStartingTour] =
+  const [sosLoading, setSosLoading] =
     useState(false);
 
-  const [stoppingTour, setStoppingTour] =
+  const [showLayers, setShowLayers] =
     useState(false);
 
-  // ====================================================
-  // REFS
-  // ====================================================
+  const [mapStyleMode, setMapStyleMode] =
+    useState("standard");
 
-  const mapRef = useRef(null);
-
-  const watchIdRef = useRef(null);
-
-  const heartbeatRef = useRef(null);
-
-  const latestLocationRef =
-    useRef(null);
-
-  const mountedRef =
-    useRef(true);
-
-  const followLocationRef =
-    useRef(false);
-
-  // ====================================================
-  // GOOGLE MAPS API KEY
-  // ====================================================
-
-  const hasGoogleMapsKey =
-    Boolean(
-      GOOGLE_MAPS_API_KEY
-    );
-
-  // ====================================================
-  // KEEP FOLLOW LOCATION REF UPDATED
-  // ====================================================
+  // ==========================================================
+  // KEEP FOLLOW REF UPDATED
+  // ==========================================================
 
   useEffect(() => {
     followLocationRef.current =
       followLocation;
-  }, [
-    followLocation,
-  ]);
+  }, [followLocation]);
 
-  // ====================================================
-  // COMPONENT MOUNT / UNMOUNT
-  // ====================================================
+  // ==========================================================
+  // GPS VALIDATION
+  // ==========================================================
 
-  useEffect(() => {
-    mountedRef.current = true;
+  const isReliableGPSPosition =
+    useCallback((position) => {
+      if (!position?.coords) {
+        return false;
+      }
 
-    return () => {
-      mountedRef.current = false;
-    };
-  }, []);
-
-  // ====================================================
-  // MAP READY
-  // ====================================================
-
-  const handleMapReady =
-    useCallback((map) => {
-      mapRef.current = map;
-    }, []);
-
-  // ====================================================
-  // LOCATION ERROR HANDLER
-  // ====================================================
-
-  const handleLocationError =
-    useCallback((error) => {
-
-      console.error(
-        "TourSafe Geolocation Error:",
-        error
-      );
+      const {
+        latitude,
+        longitude,
+        accuracy,
+      } = position.coords;
 
       if (
-        error.code ===
-        error.PERMISSION_DENIED
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude)
       ) {
-        setLocationError(
-          "Location permission was denied. Please allow location access in your browser."
-        );
+        return false;
+      }
 
-      } else if (
-        error.code ===
-        error.POSITION_UNAVAILABLE
-      ) {
-        setLocationError(
-          "Your current location is unavailable."
-        );
+      if (!Number.isFinite(accuracy)) {
+        return false;
+      }
 
-      } else if (
-        error.code ===
-        error.TIMEOUT
-      ) {
-        setLocationError(
-          "Location request timed out. Please try again."
-        );
-
-      } else {
-        setLocationError(
-          "Unable to access your current location."
+      if (accuracy > 100) {
+        console.warn(
+          `GPS accuracy is currently poor: ±${Math.round(
+            accuracy
+          )} m`
         );
       }
 
+      return true;
     }, []);
 
-  // ====================================================
-  // GET INITIAL LOCATION
-  //
-  // IMPORTANT:
-  // This does NOT start continuous tracking.
-  // ====================================================
+  // ==========================================================
+  // DISTANCE BETWEEN GPS POINTS
+  // ==========================================================
 
-  useEffect(() => {
+  const calculateDistanceBetweenPoints =
+    useCallback(
+      (point1, point2) => {
+        const earthRadius = 6371000;
 
-    let isMounted = true;
+        const lat1 =
+          (point1.lat * Math.PI) / 180;
 
-    if (!navigator.geolocation) {
+        const lat2 =
+          (point2.lat * Math.PI) / 180;
 
-      console.warn(
-        "TourSafe: Geolocation is not supported."
-      );
+        const deltaLat =
+          ((point2.lat - point1.lat) *
+            Math.PI) /
+          180;
 
-      if (isMounted) {
+        const deltaLng =
+          ((point2.lng - point1.lng) *
+            Math.PI) /
+          180;
 
-        setLocation(
-          FALLBACK_LOCATION
-        );
+        const a =
+          Math.sin(deltaLat / 2) ** 2 +
+          Math.cos(lat1) *
+            Math.cos(lat2) *
+            Math.sin(deltaLng / 2) ** 2;
 
-        setLocationError(
-          "Geolocation is not supported. Showing default map location."
-        );
+        const c =
+          2 *
+          Math.atan2(
+            Math.sqrt(a),
+            Math.sqrt(1 - a)
+          );
 
-        setLocationLoading(false);
+        return earthRadius * c;
+      },
+      []
+    );
+
+  // ==========================================================
+  // PREVENT GPS JUMPS
+  // ==========================================================
+
+  const isLocationJumpReasonable =
+    useCallback(
+      (location, currentAccuracy) => {
+        const previous =
+          lastAcceptedLocationRef.current;
+
+        if (!previous) {
+          return true;
+        }
+
+        const distance =
+          calculateDistanceBetweenPoints(
+            previous,
+            location
+          );
+
+        const now = Date.now();
+
+        const previousTime =
+          lastLocationTimeRef.current ||
+          now;
+
+        const elapsedSeconds =
+          Math.max(
+            (now - previousTime) / 1000,
+            1
+          );
+
+        const maximumReasonableSpeed =
+          70;
+
+        const maximumExpectedDistance =
+          maximumReasonableSpeed *
+            elapsedSeconds +
+          currentAccuracy * 2;
+
+        if (
+          distance >
+          maximumExpectedDistance
+        ) {
+          console.warn(
+            "Ignoring GPS jump:",
+            {
+              distance,
+              maximumExpectedDistance,
+              accuracy:
+                currentAccuracy,
+            }
+          );
+
+          return false;
+        }
+
+        return true;
+      },
+      [calculateDistanceBetweenPoints]
+    );
+
+  // ==========================================================
+  // CREATE USER MARKER
+  // ==========================================================
+
+  const createUserMarker =
+    useCallback(() => {
+      if (!mapRef.current) {
+        return;
       }
 
+      const map =
+        mapRef.current;
+
+      const location =
+        userLocationRef.current;
+
+      const lngLat = [
+        location.lng,
+        location.lat,
+      ];
+
+      if (userMarkerRef.current) {
+        userMarkerRef.current.remove();
+
+        userMarkerRef.current =
+          null;
+      }
+
+      const element =
+        document.createElement("div");
+
+      element.className =
+        "toursafe-current-marker";
+
+      element.innerHTML = `
+        <div class="toursafe-current-marker-pulse"></div>
+
+        <div class="toursafe-current-marker-ring">
+          <div class="toursafe-current-marker-dot"></div>
+        </div>
+      `;
+
+      userMarkerRef.current =
+        new maplibregl.Marker({
+          element,
+          anchor: "center",
+        })
+          .setLngLat(lngLat)
+          .addTo(map);
+
+      if (
+        map.getLayer(
+          "user-accuracy-fill"
+        )
+      ) {
+        map.removeLayer(
+          "user-accuracy-fill"
+        );
+      }
+
+      if (
+        map.getLayer(
+          "user-accuracy-line"
+        )
+      ) {
+        map.removeLayer(
+          "user-accuracy-line"
+        );
+      }
+
+      if (
+        map.getSource(
+          "user-accuracy"
+        )
+      ) {
+        map.removeSource(
+          "user-accuracy"
+        );
+      }
+
+      const currentAccuracy =
+        accuracy;
+
+      if (
+        !currentAccuracy ||
+        currentAccuracy <= 0
+      ) {
+        return;
+      }
+
+      const radius =
+        Math.min(
+          Math.max(
+            currentAccuracy,
+            10
+          ),
+          500
+        );
+
+      const circlePoints = [];
+
+      const earthRadius =
+        6371000;
+
+      const lat =
+        (location.lat * Math.PI) /
+        180;
+
+      const lng =
+        (location.lng * Math.PI) /
+        180;
+
+      for (
+        let i = 0;
+        i < 64;
+        i++
+      ) {
+        const angle =
+          (i / 64) *
+          2 *
+          Math.PI;
+
+        const dx =
+          radius *
+          Math.cos(angle);
+
+        const dy =
+          radius *
+          Math.sin(angle);
+
+        const newLat =
+          lat +
+          dy / earthRadius;
+
+        const newLng =
+          lng +
+          dx /
+            (earthRadius *
+              Math.cos(lat));
+
+        circlePoints.push([
+          (newLng * 180) /
+            Math.PI,
+
+          (newLat * 180) /
+            Math.PI,
+        ]);
+      }
+
+      circlePoints.push(
+        circlePoints[0]
+      );
+
+      map.addSource(
+        "user-accuracy",
+        {
+          type: "geojson",
+
+          data: {
+            type: "Feature",
+
+            geometry: {
+              type: "Polygon",
+
+              coordinates: [
+                circlePoints,
+              ],
+            },
+          },
+        }
+      );
+
+      map.addLayer({
+        id: "user-accuracy-fill",
+
+        type: "fill",
+
+        source:
+          "user-accuracy",
+
+        paint: {
+          "fill-color":
+            "#0f766e",
+
+          "fill-opacity":
+            0.08,
+        },
+      });
+
+      map.addLayer({
+        id: "user-accuracy-line",
+
+        type: "line",
+
+        source:
+          "user-accuracy",
+
+        paint: {
+          "line-color":
+            "#0f766e",
+
+          "line-width": 1.5,
+
+          "line-opacity": 0.35,
+        },
+      });
+    }, [accuracy]);
+
+  // ==========================================================
+  // UPDATE USER MARKER
+  // ==========================================================
+
+  const updateUserMarker =
+    useCallback(() => {
+      if (!mapRef.current) {
+        return;
+      }
+
+      if (
+        !userMarkerRef.current
+      ) {
+        createUserMarker();
+        return;
+      }
+
+      userMarkerRef.current.setLngLat([
+        userLocationRef.current.lng,
+        userLocationRef.current.lat,
+      ]);
+    }, [createUserMarker]);
+
+  // ==========================================================
+  // CREATE DESTINATION MARKER
+  // ==========================================================
+
+  const createDestinationMarker =
+    useCallback((place) => {
+      if (
+        !mapRef.current ||
+        !place
+      ) {
+        return;
+      }
+
+      if (
+        destinationMarkerRef.current
+      ) {
+        destinationMarkerRef.current.remove();
+
+        destinationMarkerRef.current =
+          null;
+      }
+
+      const element =
+        document.createElement("div");
+
+      element.className =
+        "toursafe-destination-marker";
+
+      element.innerHTML = `
+        <div class="toursafe-destination-pin">
+          <div class="toursafe-destination-dot"></div>
+        </div>
+      `;
+
+      destinationMarkerRef.current =
+        new maplibregl.Marker({
+          element,
+          anchor: "bottom",
+        })
+          .setLngLat([
+            Number(place.lon),
+            Number(place.lat),
+          ])
+          .addTo(mapRef.current);
+    }, []);
+
+  // ==========================================================
+  // ADD ROUTE LAYERS
+  // ==========================================================
+
+  const addRouteLayers =
+    useCallback(() => {
+      if (!mapRef.current) {
+        return;
+      }
+
+      const map =
+        mapRef.current;
+
+      if (
+        !map.getSource(
+          "tour-route"
+        )
+      ) {
+        map.addSource(
+          "tour-route",
+          {
+            type: "geojson",
+
+            data: {
+              type: "Feature",
+
+              properties: {},
+
+              geometry: {
+                type: "LineString",
+
+                coordinates:
+                  routeCoordinatesRef.current,
+              },
+            },
+          }
+        );
+      }
+
+      if (
+        !map.getLayer(
+          "tour-route-outline"
+        )
+      ) {
+        map.addLayer({
+          id: "tour-route-outline",
+
+          type: "line",
+
+          source:
+            "tour-route",
+
+          layout: {
+            "line-cap": "round",
+            "line-join": "round",
+          },
+
+          paint: {
+            "line-color":
+              "#ffffff",
+
+            "line-width":
+              9,
+
+            "line-opacity":
+              0.95,
+          },
+        });
+      }
+
+      if (
+        !map.getLayer(
+          "tour-route-line"
+        )
+      ) {
+        map.addLayer({
+          id: "tour-route-line",
+
+          type: "line",
+
+          source:
+            "tour-route",
+
+          layout: {
+            "line-cap": "round",
+            "line-join": "round",
+          },
+
+          paint: {
+            "line-color":
+              "#0f766e",
+
+            "line-width":
+              5,
+
+            "line-opacity":
+              1,
+          },
+        });
+      }
+    }, []);
+
+  // ==========================================================
+  // INITIALIZE MAP
+  // ==========================================================
+
+  useEffect(() => {
+    if (
+      !mapContainerRef.current ||
+      mapRef.current
+    ) {
       return;
     }
 
-    console.log(
-      "================================="
+    const map =
+      new maplibregl.Map({
+        container:
+          mapContainerRef.current,
+
+        style:
+          MAP_STYLE,
+
+        center: [
+          DEFAULT_LOCATION.lng,
+          DEFAULT_LOCATION.lat,
+        ],
+
+        zoom: 13,
+
+        attributionControl:
+          true,
+      });
+
+    mapRef.current =
+      map;
+
+    map.addControl(
+      new maplibregl.NavigationControl({
+        showCompass: true,
+        showZoom: true,
+        visualizePitch: true,
+      }),
+      "bottom-right"
     );
 
-    console.log(
-      "TOURSAFE - GETTING INITIAL LOCATION"
+    map.addControl(
+      new maplibregl.ScaleControl({
+        maxWidth: 120,
+        unit: "metric",
+      }),
+      "bottom-left"
     );
 
-    console.log(
-      "================================="
+    map.on(
+      "load",
+      () => {
+        setMapReady(true);
+
+        addRouteLayers();
+      }
     );
 
-    navigator.geolocation.getCurrentPosition(
-
-      (position) => {
-
-        if (!isMounted) {
-          return;
-        }
-
-        const currentLocation = {
-          lat:
-            position.coords.latitude,
-
-          lng:
-            position.coords.longitude,
-
-          accuracy:
-            position.coords.accuracy,
-        };
-
-        console.log(
-          "================================="
-        );
-
-        console.log(
-          "TOURSAFE - INITIAL LOCATION"
-        );
-
-        console.log(
-          "Latitude :",
-          currentLocation.lat
-        );
-
-        console.log(
-          "Longitude:",
-          currentLocation.lng
-        );
-
-        console.log(
-          "Accuracy :",
-          currentLocation.accuracy,
-          "meters"
-        );
-
-        console.log(
-          "================================="
-        );
-
-        setLocation(
-          currentLocation
-        );
-
-        latestLocationRef.current =
-          currentLocation;
-
-        setLocationError("");
-
-        setLocationLoading(false);
-      },
-
-      (error) => {
-
-        if (!isMounted) {
-          return;
-        }
-
-        handleLocationError(
-          error
-        );
-
-        setLocation(
-          FALLBACK_LOCATION
-        );
-
-        setLocationLoading(false);
-      },
-
-      {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 15000,
+    map.on(
+      "dragstart",
+      () => {
+        setFollowLocation(false);
       }
     );
 
     return () => {
-      isMounted = false;
-    };
+      if (
+        watchIdRef.current !==
+        null
+      ) {
+        navigator.geolocation.clearWatch(
+          watchIdRef.current
+        );
 
+        watchIdRef.current =
+          null;
+      }
+
+      if (
+        heartbeatRef.current
+      ) {
+        clearInterval(
+          heartbeatRef.current
+        );
+
+        heartbeatRef.current =
+          null;
+      }
+
+      if (
+        userMarkerRef.current
+      ) {
+        userMarkerRef.current.remove();
+
+        userMarkerRef.current =
+          null;
+      }
+
+      if (
+        destinationMarkerRef.current
+      ) {
+        destinationMarkerRef.current.remove();
+
+        destinationMarkerRef.current =
+          null;
+      }
+
+      map.remove();
+
+      mapRef.current =
+        null;
+    };
+  }, [addRouteLayers]);
+
+  // ==========================================================
+  // CHANGE MAP STYLE
+  // ==========================================================
+
+  const changeMapStyle =
+    useCallback(
+      (mode) => {
+        if (!mapRef.current) {
+          return;
+        }
+
+        const style =
+          mode === "bright"
+            ? BRIGHT_MAP_STYLE
+            : MAP_STYLE;
+
+        setMapStyleMode(mode);
+
+        mapRef.current.setStyle(
+          style
+        );
+
+        mapRef.current.once(
+          "style.load",
+          () => {
+            addRouteLayers();
+
+            if (userLocationRef.current) {
+              createUserMarker();
+            }
+
+            if (
+              destinationRef.current
+            ) {
+              createDestinationMarker(
+                destinationRef.current
+              );
+            }
+
+            const coordinates =
+              routeCoordinatesRef.current;
+
+            if (
+              coordinates.length > 0
+            ) {
+              const source =
+                mapRef.current.getSource(
+                  "tour-route"
+                );
+
+              if (source) {
+                source.setData({
+                  type: "Feature",
+
+                  properties: {},
+
+                  geometry: {
+                    type: "LineString",
+
+                    coordinates,
+                  },
+                });
+              }
+            }
+          }
+        );
+      },
+      [
+        addRouteLayers,
+        createUserMarker,
+        createDestinationMarker,
+      ]
+    );
+
+  // ==========================================================
+  // GET CURRENT LOCATION
+  // ==========================================================
+
+  const getCurrentLocation =
+    useCallback(
+      (moveMap = true) => {
+        if (
+          !navigator.geolocation
+        ) {
+          setMessage(
+            "Your browser does not support location."
+          );
+
+          return;
+        }
+
+        setMessage(
+          "Getting your current location..."
+        );
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            if (
+              !isReliableGPSPosition(
+                position
+              )
+            ) {
+              setMessage(
+                `GPS accuracy is poor (±${Math.round(
+                  position.coords
+                    .accuracy
+                )} m). Waiting for a better signal...`
+              );
+
+              return;
+            }
+
+            const location = {
+              lat:
+                position.coords
+                  .latitude,
+
+              lng:
+                position.coords
+                  .longitude,
+            };
+
+            const currentAccuracy =
+              position.coords
+                .accuracy;
+
+            if (
+              !isLocationJumpReasonable(
+                location,
+                currentAccuracy
+              )
+            ) {
+              setMessage(
+                "GPS location changed unexpectedly. Waiting for a stable signal..."
+              );
+
+              return;
+            }
+
+            userLocationRef.current =
+              location;
+
+            lastAcceptedLocationRef.current =
+              location;
+
+            lastAcceptedAccuracyRef.current =
+              currentAccuracy;
+
+            lastLocationTimeRef.current =
+              Date.now();
+
+            setUserLocation(
+              location
+            );
+
+            setAccuracy(
+              currentAccuracy
+            );
+
+            setRisk(
+              calculateRisk(
+                currentAccuracy
+              )
+            );
+
+            updateUserMarker();
+
+            if (
+              mapRef.current &&
+              moveMap
+            ) {
+              mapRef.current.flyTo({
+                center: [
+                  location.lng,
+                  location.lat,
+                ],
+
+                zoom: 17,
+
+                speed: 1.1,
+              });
+            }
+
+            setMessage("");
+          },
+
+          (error) => {
+            console.error(
+              "Location error:",
+              error
+            );
+
+            setMessage(
+              "Unable to get your current location."
+            );
+          },
+
+          {
+            enableHighAccuracy:
+              true,
+
+            timeout:
+              20000,
+
+            maximumAge:
+              0,
+          }
+        );
+      },
+      [
+        isReliableGPSPosition,
+        isLocationJumpReasonable,
+        updateUserMarker,
+      ]
+    );
+
+  // ==========================================================
+  // INITIAL LOCATION
+  // ==========================================================
+
+  useEffect(() => {
+    if (!mapReady) {
+      return;
+    }
+
+    getCurrentLocation(true);
   }, [
-    handleLocationError,
+    mapReady,
+    getCurrentLocation,
   ]);
 
-  // ====================================================
-  // CALCULATE RISK
-  // ====================================================
+  // ==========================================================
+  // SEARCH PLACES
+  // ==========================================================
 
-  const calculateRisk = (
-    accuracy
-  ) => {
-
-    if (
-      typeof accuracy !==
-      "number"
-    ) {
-      return 12;
-    }
-
-    if (accuracy > 100) {
-      return 35;
-    }
-
-    if (accuracy > 50) {
-      return 30;
-    }
-
-    if (accuracy > 30) {
-      return 22;
-    }
-
-    if (accuracy > 15) {
-      return 16;
-    }
-
-    return 12;
-  };
-
-  // ====================================================
-  // START TOUR ON BACKEND
-  // ====================================================
-
-  const startTourOnServer =
+  const searchPlaces =
     async () => {
+      const query =
+        searchText.trim();
 
+      if (!query) {
+        setSearchResults([]);
+
+        setShowSearchResults(
+          false
+        );
+
+        return;
+      }
+
+      try {
+        setSearching(true);
+
+        const url =
+          `${NOMINATIM_URL}?` +
+          new URLSearchParams({
+            q: query,
+
+            format: "json",
+
+            addressdetails: "1",
+
+            limit: "5",
+
+            countrycodes: "in",
+          });
+
+        const response =
+          await fetch(
+            url,
+            {
+              headers: {
+                Accept:
+                  "application/json",
+              },
+            }
+          );
+
+        if (!response.ok) {
+          throw new Error(
+            "Search failed"
+          );
+        }
+
+        const data =
+          await response.json();
+
+        setSearchResults(data);
+
+        setShowSearchResults(
+          true
+        );
+      } catch (error) {
+        console.error(
+          "Search error:",
+          error
+        );
+
+        setMessage(
+          "Unable to search this place."
+        );
+      } finally {
+        setSearching(false);
+      }
+    };
+
+  // ==========================================================
+  // SEARCH KEYBOARD
+  // ==========================================================
+
+  const handleSearchKeyDown =
+    (event) => {
+      if (
+        event.key ===
+        "Enter"
+      ) {
+        event.preventDefault();
+
+        searchPlaces();
+      }
+
+      if (
+        event.key ===
+        "Escape"
+      ) {
+        setShowSearchResults(
+          false
+        );
+      }
+    };
+
+  // ==========================================================
+  // SELECT DESTINATION
+  // ==========================================================
+
+  const selectPlace =
+    (place) => {
+      if (!mapRef.current) {
+        return;
+      }
+
+      const selected = {
+        ...place,
+
+        lat:
+          Number(place.lat),
+
+        lon:
+          Number(place.lon),
+      };
+
+      destinationRef.current =
+        selected;
+
+      setDestination(
+        selected
+      );
+
+      setSearchText(
+        place.display_name
+          ?.split(",")
+          .slice(0, 2)
+          .join(",") ||
+          place.display_name
+      );
+
+      setSearchResults([]);
+
+      setShowSearchResults(
+        false
+      );
+
+      createDestinationMarker(
+        selected
+      );
+
+      mapRef.current.flyTo({
+        center: [
+          selected.lon,
+          selected.lat,
+        ],
+
+        zoom: 15,
+
+        speed: 1.1,
+      });
+
+      setDistance(null);
+
+      setDuration(null);
+
+      setRouteError("");
+
+      clearRoute();
+    };
+
+  // ==========================================================
+  // CLEAR DESTINATION
+  // ==========================================================
+
+  const clearDestination =
+    () => {
+      destinationRef.current =
+        null;
+
+      setDestination(null);
+
+      setSearchText("");
+
+      setSearchResults([]);
+
+      setShowSearchResults(
+        false
+      );
+
+      if (
+        destinationMarkerRef.current
+      ) {
+        destinationMarkerRef.current.remove();
+
+        destinationMarkerRef.current =
+          null;
+      }
+
+      clearRoute();
+    };
+
+  // ==========================================================
+  // CLEAR ROUTE
+  // ==========================================================
+
+  const clearRoute =
+    () => {
+      routeCoordinatesRef.current =
+        [];
+
+      setDistance(null);
+
+      setDuration(null);
+
+      if (!mapRef.current) {
+        return;
+      }
+
+      const source =
+        mapRef.current.getSource(
+          "tour-route"
+        );
+
+      if (source) {
+        source.setData({
+          type: "Feature",
+
+          properties: {},
+
+          geometry: {
+            type: "LineString",
+
+            coordinates: [],
+          },
+        });
+      }
+    };
+
+  // ==========================================================
+  // CALCULATE ROUTE
+  // ==========================================================
+
+  const calculateRoute =
+    async (
+      from,
+      to
+    ) => {
+      if (!mapRef.current) {
+        return null;
+      }
+
+      try {
+        setRouteLoading(true);
+
+        setRouteError("");
+
+        const coordinates =
+          `${from.lng},${from.lat};` +
+          `${to.lon},${to.lat}`;
+
+        const url =
+          `${OSRM_URL}/driving/${coordinates}` +
+          `?overview=full&geometries=geojson`;
+
+        const response =
+          await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(
+            "Route request failed"
+          );
+        }
+
+        const data =
+          await response.json();
+
+        if (
+          data.code !== "Ok" ||
+          !data.routes?.length
+        ) {
+          throw new Error(
+            "No route found"
+          );
+        }
+
+        const route =
+          data.routes[0];
+
+        const coordinatesArray =
+          route.geometry.coordinates;
+
+        routeCoordinatesRef.current =
+          coordinatesArray;
+
+        setDistance(
+          route.distance
+        );
+
+        setDuration(
+          route.duration
+        );
+
+        addRouteLayers();
+
+        const source =
+          mapRef.current.getSource(
+            "tour-route"
+          );
+
+        if (source) {
+          source.setData({
+            type: "Feature",
+
+            properties: {},
+
+            geometry: {
+              type: "LineString",
+
+              coordinates:
+                coordinatesArray,
+            },
+          });
+        }
+
+        const bounds =
+          new maplibregl.LngLatBounds();
+
+        coordinatesArray.forEach(
+          (coordinate) => {
+            bounds.extend(
+              coordinate
+            );
+          }
+        );
+
+        mapRef.current.fitBounds(
+          bounds,
+          {
+            padding: {
+              top: 170,
+              bottom: 220,
+              left: 70,
+              right: 70,
+            },
+
+            duration: 1200,
+          }
+        );
+
+        return route;
+      } catch (error) {
+        console.error(
+          "Route error:",
+          error
+        );
+
+        setRouteError(
+          "Unable to calculate route."
+        );
+
+        return null;
+      } finally {
+        setRouteLoading(false);
+      }
+    };
+
+  // ==========================================================
+  // SEND LOCATION TO BACKEND
+  // ==========================================================
+
+  const sendLocationToBackend =
+    async (
+      location,
+      currentAccuracy
+    ) => {
       const userId =
-        getUserId();
+        getStoredUserId();
 
-      if (!userId) {
-        throw new Error(
-          "User ID not found. Please login again."
-        );
+      if (
+        !userId ||
+        !location
+      ) {
+        return;
       }
 
-      if (!location) {
-        throw new Error(
-          "Current location is not available."
-        );
-      }
-
-      console.log(
-        "================================="
-      );
-
-      console.log(
-        "TOURSAFE - START TOUR REQUEST"
-      );
-
-      console.log(
-        "API URL:",
-        `${API_URL}/api/location/start`
-      );
-
-      console.log(
-        "User ID:",
-        userId
-      );
-
-      console.log(
-        "Latitude:",
-        location.lat
-      );
-
-      console.log(
-        "Longitude:",
-        location.lng
-      );
-
-      console.log(
-        "Accuracy:",
-        location.accuracy
-      );
-
-      console.log(
-        "================================="
-      );
-
-      const response =
+      try {
         await fetch(
-          `${API_URL}/api/location/start`,
+          `${API_URL}/api/location/update`,
           {
             method: "POST",
 
@@ -675,464 +1601,383 @@ const Map = () => {
                 location.lng,
 
               accuracy:
-                location.accuracy ??
+                currentAccuracy ??
                 null,
             }),
           }
         );
-
-      let data;
-
-      try {
-        data =
-          await response.json();
-      } catch {
-        throw new Error(
-          "Server returned an invalid response."
+      } catch (error) {
+        console.error(
+          "Location update error:",
+          error
         );
       }
-
-      console.log(
-        "START TOUR RESPONSE:",
-        data
-      );
-
-      if (
-        !response.ok ||
-        !data.success
-      ) {
-        throw new Error(
-          data.message ||
-          "Unable to start tour."
-        );
-      }
-
-      console.log(
-        "TourSafe: Tour started on server."
-      );
-
-      return data;
     };
 
-  // ====================================================
-  // UPDATE LOCATION ON BACKEND
-  // ====================================================
+  // ==========================================================
+  // GPS POSITION UPDATE
+  // ==========================================================
 
-  const updateLocationOnServer =
+  const handlePositionUpdate =
     useCallback(
-      async (currentLocation) => {
-
-        const userId =
-          getUserId();
-
-        if (!userId) {
-
-          console.error(
-            "TourSafe: User ID not found."
+      (position) => {
+        if (
+          !isReliableGPSPosition(
+            position
+          )
+        ) {
+          setMessage(
+            "GPS accuracy is poor. Waiting for a better signal..."
           );
 
-          return false;
+          return;
         }
 
-        if (!currentLocation) {
+        const location = {
+          lat:
+            position.coords.latitude,
 
-          console.error(
-            "TourSafe: No location available."
+          lng:
+            position.coords.longitude,
+        };
+
+        const currentAccuracy =
+          position.coords.accuracy;
+
+        if (
+          !isLocationJumpReasonable(
+            location,
+            currentAccuracy
+          )
+        ) {
+          setMessage(
+            "GPS location changed unexpectedly. Waiting for a stable signal..."
           );
 
-          return false;
+          return;
         }
 
-        try {
+        const previousAccuracy =
+          lastAcceptedAccuracyRef.current;
 
-          console.log(
-            "---------------------------------"
+        if (
+          previousAccuracy !==
+            Infinity &&
+          currentAccuracy >
+            previousAccuracy * 3 &&
+          currentAccuracy > 50
+        ) {
+          console.warn(
+            "Ignoring worse GPS reading:",
+            currentAccuracy
           );
 
-          console.log(
-            "TOURSAFE - SENDING LOCATION"
+          return;
+        }
+
+        userLocationRef.current =
+          location;
+
+        lastAcceptedLocationRef.current =
+          location;
+
+        lastAcceptedAccuracyRef.current =
+          currentAccuracy;
+
+        lastLocationTimeRef.current =
+          Date.now();
+
+        setUserLocation(
+          location
+        );
+
+        setAccuracy(
+          currentAccuracy
+        );
+
+        setRisk(
+          calculateRisk(
+            currentAccuracy
+          )
+        );
+
+        updateUserMarker();
+
+        if (
+          mapRef.current &&
+          followLocationRef.current
+        ) {
+          mapRef.current.easeTo({
+            center: [
+              location.lng,
+              location.lat,
+            ],
+
+            duration: 600,
+          });
+        }
+
+        sendLocationToBackend(
+          location,
+          currentAccuracy
+        );
+
+        setMessage("");
+      },
+      [
+        isReliableGPSPosition,
+        isLocationJumpReasonable,
+        updateUserMarker,
+      ]
+    );
+
+  // ==========================================================
+  // GPS ERROR
+  // ==========================================================
+
+  const handlePositionError =
+    useCallback((error) => {
+      console.error(
+        "GPS error:",
+        error
+      );
+
+      setMessage(
+        "GPS signal is unavailable."
+      );
+    }, []);
+
+  // ==========================================================
+  // START TOUR
+  // ==========================================================
+
+  const startTour =
+    () => {
+      if (!destination) {
+        setMessage(
+          "Search for a destination first."
+        );
+
+        return;
+      }
+
+      if (
+        !navigator.geolocation
+      ) {
+        setMessage(
+          "Geolocation is not supported."
+        );
+
+        return;
+      }
+
+      setMessage("");
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          if (
+            !isReliableGPSPosition(
+              position
+            )
+          ) {
+            setMessage(
+              `GPS accuracy is poor (±${Math.round(
+                position.coords
+                  .accuracy
+              )} m). Please wait for a better GPS signal.`
+            );
+
+            return;
+          }
+
+          const location = {
+            lat:
+              position.coords.latitude,
+
+            lng:
+              position.coords.longitude,
+          };
+
+          const currentAccuracy =
+            position.coords.accuracy;
+
+          if (
+            !isLocationJumpReasonable(
+              location,
+              currentAccuracy
+            )
+          ) {
+            setMessage(
+              "GPS location is unstable. Please try again."
+            );
+
+            return;
+          }
+
+          userLocationRef.current =
+            location;
+
+          lastAcceptedLocationRef.current =
+            location;
+
+          lastAcceptedAccuracyRef.current =
+            currentAccuracy;
+
+          lastLocationTimeRef.current =
+            Date.now();
+
+          setUserLocation(
+            location
           );
 
-          console.log(
-            "User ID:",
-            userId
+          setAccuracy(
+            currentAccuracy
           );
 
-          console.log(
-            "Latitude:",
-            currentLocation.lat
+          setRisk(
+            calculateRisk(
+              currentAccuracy
+            )
           );
 
-          console.log(
-            "Longitude:",
-            currentLocation.lng
-          );
+          updateUserMarker();
 
-          console.log(
-            "Accuracy:",
-            currentLocation.accuracy
-          );
+          const route =
+            await calculateRoute(
+              location,
+              destination
+            );
 
-          console.log(
-            "URL:",
-            `${API_URL}/api/location/update`
-          );
+          if (!route) {
+            return;
+          }
 
-          console.log(
-            "---------------------------------"
-          );
+          const userId =
+            getStoredUserId();
 
-          const response =
-            await fetch(
-              `${API_URL}/api/location/update`,
+          if (userId) {
+            try {
+              await fetch(
+                `${API_URL}/api/location/start`,
+                {
+                  method: "POST",
+
+                  headers: {
+                    "Content-Type":
+                      "application/json",
+                  },
+
+                  body:
+                    JSON.stringify({
+                      userId,
+
+                      latitude:
+                        location.lat,
+
+                      longitude:
+                        location.lng,
+
+                      accuracy:
+                        currentAccuracy,
+                    }),
+                }
+              );
+            } catch (error) {
+              console.error(
+                "Backend start error:",
+                error
+              );
+            }
+          }
+
+          if (
+            watchIdRef.current !==
+            null
+          ) {
+            navigator.geolocation.clearWatch(
+              watchIdRef.current
+            );
+          }
+
+          watchIdRef.current =
+            navigator.geolocation.watchPosition(
+              handlePositionUpdate,
+
+              handlePositionError,
+
               {
-                method: "POST",
+                enableHighAccuracy:
+                  true,
 
-                headers: {
-                  "Content-Type":
-                    "application/json",
-                },
+                maximumAge: 0,
 
-                body: JSON.stringify({
-                  userId,
-
-                  latitude:
-                    currentLocation.lat,
-
-                  longitude:
-                    currentLocation.lng,
-
-                  accuracy:
-                    currentLocation.accuracy ??
-                    null,
-                }),
+                timeout: 30000,
               }
             );
 
-          let data;
-
-          try {
-            data =
-              await response.json();
-          } catch {
-            console.error(
-              "TourSafe: Invalid JSON from location update."
-            );
-
-            return false;
-          }
-
-          console.log(
-            "UPDATE LOCATION RESPONSE:",
-            data
-          );
-
           if (
-            !response.ok ||
-            !data.success
+            heartbeatRef.current
           ) {
-
-            console.error(
-              "TourSafe: Location update failed:",
-              data.message
+            clearInterval(
+              heartbeatRef.current
             );
-
-            return false;
           }
 
-          console.log(
-            "TourSafe: Location saved to database."
+          heartbeatRef.current =
+            setInterval(() => {
+              sendLocationToBackend(
+                userLocationRef.current,
+
+                lastAcceptedAccuracyRef.current !==
+                  Infinity
+                  ? lastAcceptedAccuracyRef.current
+                  : accuracy
+              );
+            }, 5000);
+
+          setTourStarted(true);
+
+          setTracking(true);
+
+          setMessage(
+            "Tour started."
           );
+        },
 
-          return true;
-
-        } catch (error) {
-
+        (error) => {
           console.error(
-            "TourSafe: Location update network error:",
+            "Start location error:",
             error
           );
 
-          return false;
+          setMessage(
+            "Please allow location access to start your tour."
+          );
+        },
+
+        {
+          enableHighAccuracy:
+            true,
+
+          timeout:
+            15000,
+
+          maximumAge:
+            0,
         }
-
-      },
-      []
-    );
-
-  // ====================================================
-  // START CONTINUOUS LOCATION MONITORING
-  // ====================================================
-
-  const startLocationMonitoring =
-    () => {
-
-      if (!navigator.geolocation) {
-
-        setLocationError(
-          "Geolocation is not supported by your browser."
-        );
-
-        return false;
-      }
-
-      // ------------------------------------------------
-      // PREVENT DUPLICATE WATCHERS
-      // ------------------------------------------------
-
-      if (
-        watchIdRef.current !== null
-      ) {
-
-        console.log(
-          "TourSafe: Location monitoring already active."
-        );
-
-        return true;
-      }
-
-      console.log(
-        "================================="
       );
-
-      console.log(
-        "TOURSAFE - MONITORING STARTED"
-      );
-
-      console.log(
-        "Continuous location tracking is active."
-      );
-
-      console.log(
-        "================================="
-      );
-
-      // ------------------------------------------------
-      // GPS WATCH
-      // ------------------------------------------------
-
-      const watchId =
-        navigator.geolocation.watchPosition(
-
-          async (position) => {
-
-            if (
-              !mountedRef.current
-            ) {
-              return;
-            }
-
-            const currentLocation = {
-
-              lat:
-                position.coords.latitude,
-
-              lng:
-                position.coords.longitude,
-
-              accuracy:
-                position.coords.accuracy,
-            };
-
-            // ------------------------------------------
-            // SAVE LATEST LOCATION IN REF
-            // ------------------------------------------
-
-            latestLocationRef.current =
-              currentLocation;
-
-            // ------------------------------------------
-            // CONSOLE
-            // ------------------------------------------
-
-            console.log(
-              "================================="
-            );
-
-            console.log(
-              "TOURSAFE - LIVE GPS UPDATE"
-            );
-
-            console.log(
-              "Latitude :",
-              currentLocation.lat
-            );
-
-            console.log(
-              "Longitude:",
-              currentLocation.lng
-            );
-
-            console.log(
-              "Accuracy :",
-              currentLocation.accuracy,
-              "meters"
-            );
-
-            console.log(
-              "================================="
-            );
-
-            // ------------------------------------------
-            // UPDATE FRONTEND
-            // ------------------------------------------
-
-            setLocation(
-              currentLocation
-            );
-
-            setLocationError("");
-
-            // ------------------------------------------
-            // UPDATE RISK
-            // ------------------------------------------
-
-            const risk =
-              calculateRisk(
-                currentLocation.accuracy
-              );
-
-            setRiskPercentage(
-              risk
-            );
-
-            // ------------------------------------------
-            // SAVE TO DATABASE
-            // ------------------------------------------
-
-            await updateLocationOnServer(
-              currentLocation
-            );
-
-            // ------------------------------------------
-            // FOLLOW LOCATION
-            // ------------------------------------------
-
-            if (
-              followLocationRef.current &&
-              mapRef.current
-            ) {
-
-              mapRef.current.panTo({
-                lat:
-                  currentLocation.lat,
-
-                lng:
-                  currentLocation.lng,
-              });
-            }
-
-          },
-
-          (error) => {
-
-            console.error(
-              "TourSafe Monitoring Error:",
-              error
-            );
-
-            handleLocationError(
-              error
-            );
-
-          },
-
-          {
-            enableHighAccuracy: true,
-
-            maximumAge: 5000,
-
-            timeout: 15000,
-          }
-        );
-
-      watchIdRef.current =
-        watchId;
-
-      // =================================================
-      // HEARTBEAT
-      //
-      // Even if the tourist is standing still and
-      // watchPosition does not fire, this updates
-      // updated_at in MySQL every 5 seconds.
-      // =================================================
-
-      heartbeatRef.current =
-        setInterval(
-          async () => {
-
-            if (
-              !mountedRef.current
-            ) {
-              return;
-            }
-
-            if (
-              !latestLocationRef.current
-            ) {
-              console.log(
-                "TourSafe: Waiting for GPS location..."
-              );
-
-              return;
-            }
-
-            console.log(
-              "================================="
-            );
-
-            console.log(
-              "TOURSAFE - LOCATION HEARTBEAT"
-            );
-
-            console.log(
-              "Sending latest location..."
-            );
-
-            console.log(
-              "Latitude:",
-              latestLocationRef.current.lat
-            );
-
-            console.log(
-              "Longitude:",
-              latestLocationRef.current.lng
-            );
-
-            console.log(
-              "================================="
-            );
-
-            await updateLocationOnServer(
-              latestLocationRef.current
-            );
-
-          },
-          LOCATION_HEARTBEAT_INTERVAL
-        );
-
-      return true;
     };
 
-  // ====================================================
-  // STOP CONTINUOUS LOCATION MONITORING
-  // ====================================================
+  // ==========================================================
+  // STOP TOUR
+  // ==========================================================
 
-  const stopLocationMonitoring =
-    () => {
-
-      // ------------------------------------------------
-      // STOP GPS WATCH
-      // ------------------------------------------------
-
+  const stopTour =
+    async () => {
       if (
-        watchIdRef.current !== null
+        watchIdRef.current !==
+        null
       ) {
-
-        console.log(
-          "TourSafe: Stopping GPS monitoring..."
-        );
-
         navigator.geolocation.clearWatch(
           watchIdRef.current
         );
@@ -1141,14 +1986,9 @@ const Map = () => {
           null;
       }
 
-      // ------------------------------------------------
-      // STOP HEARTBEAT
-      // ------------------------------------------------
-
       if (
-        heartbeatRef.current !== null
+        heartbeatRef.current
       ) {
-
         clearInterval(
           heartbeatRef.current
         );
@@ -1157,49 +1997,11 @@ const Map = () => {
           null;
       }
 
-      console.log(
-        "================================="
-      );
-
-      console.log(
-        "TOURSAFE - MONITORING STOPPED"
-      );
-
-      console.log(
-        "Continuous location tracking disabled."
-      );
-
-      console.log(
-        "================================="
-      );
-    };
-
-  // ====================================================
-  // STOP TOUR ON BACKEND
-  // ====================================================
-
-  const stopTourOnServer =
-    async () => {
-
       const userId =
-        getUserId();
+        getStoredUserId();
 
-      if (!userId) {
-
-        console.error(
-          "TourSafe: User ID not found."
-        );
-
-        return;
-      }
-
-      try {
-
-        console.log(
-          "TourSafe: Sending STOP request..."
-        );
-
-        const response =
+      if (userId) {
+        try {
           await fetch(
             `${API_URL}/api/location/stop`,
             {
@@ -1210,269 +2012,163 @@ const Map = () => {
                   "application/json",
               },
 
-              body: JSON.stringify({
-                userId,
-              }),
+              body:
+                JSON.stringify({
+                  userId,
+                }),
             }
           );
-
-        let data;
-
-        try {
-          data =
-            await response.json();
-        } catch {
+        } catch (error) {
           console.error(
-            "TourSafe: Stop tour returned invalid JSON."
+            "Stop error:",
+            error
           );
-
-          return;
         }
-
-        console.log(
-          "STOP TOUR RESPONSE:",
-          data
-        );
-
-        if (
-          !response.ok ||
-          !data.success
-        ) {
-
-          console.error(
-            "TourSafe: Stop tour failed:",
-            data.message
-          );
-
-          return;
-        }
-
-        console.log(
-          "TourSafe: Tour stopped on server."
-        );
-
-      } catch (error) {
-
-        console.error(
-          "TourSafe: Stop tour network error:",
-          error
-        );
       }
+
+      setTourStarted(false);
+
+      setTracking(false);
+
+      clearRoute();
+
+      setMessage(
+        "Tour stopped."
+      );
     };
 
-  // ====================================================
-  // START TOUR
-  // ====================================================
+  // ==========================================================
+  // MY LOCATION
+  // ==========================================================
 
-  const startTour =
+  const goToMyLocation =
+    () => {
+      setFollowLocation(true);
+
+      followLocationRef.current =
+        true;
+
+      getCurrentLocation(true);
+    };
+
+  // ==========================================================
+  // TOGGLE FOLLOW
+  // ==========================================================
+
+  const toggleFollow =
+    () => {
+      setFollowLocation(
+        (previous) => {
+          const next =
+            !previous;
+
+          followLocationRef.current =
+            next;
+
+          return next;
+        }
+      );
+    };
+
+  // ==========================================================
+  // SEND SOS
+  // ==========================================================
+
+  const sendSOS =
     async () => {
-
-      if (startingTour) {
+      if (sosLoading) {
         return;
       }
 
       try {
-
-        setStartingTour(true);
-
-        setApiError("");
-
-        setLocationError("");
-
-        // ---------------------------------------------
-        // CHECK LOCATION
-        // ---------------------------------------------
-
-        if (!location) {
-
-          throw new Error(
-            "Current location is not available."
-          );
-        }
-
-        // ---------------------------------------------
-        // CHECK USER
-        // ---------------------------------------------
+        setSosLoading(true);
 
         const userId =
-          getUserId();
+          getStoredUserId();
+
+        const location =
+          userLocationRef.current;
 
         if (!userId) {
-
-          throw new Error(
-            "User ID not found. Please login again."
+          setMessage(
+            "Please login before sending SOS."
           );
+
+          return;
         }
 
-        console.log(
-          "================================="
-        );
-
-        console.log(
-          "TOURSAFE - STARTING TOUR"
-        );
-
-        console.log(
-          "User ID:",
-          userId
-        );
-
-        console.log(
-          "================================="
-        );
-
-        // ---------------------------------------------
-        // SAVE LATEST LOCATION
-        // ---------------------------------------------
-
-        latestLocationRef.current =
-          location;
-
-        // ---------------------------------------------
-        // START DATABASE TOUR
-        // ---------------------------------------------
-
-        await startTourOnServer();
-
-        // ---------------------------------------------
-        // UPDATE UI
-        // ---------------------------------------------
-
-        setTourStarted(true);
-
-        // ---------------------------------------------
-        // START GPS MONITORING
-        // ---------------------------------------------
-
-        const monitoringStarted =
-          startLocationMonitoring();
-
-        if (!monitoringStarted) {
-
-          await stopTourOnServer();
-
-          setTourStarted(false);
-
-          throw new Error(
-            "Unable to start location monitoring."
+        if (!location) {
+          setMessage(
+            "Current location is not available."
           );
+
+          return;
         }
 
-        console.log(
-          "================================="
-        );
+        try {
+          const response =
+            await fetch(
+              `${API_URL}/api/sos`,
+              {
+                method: "POST",
 
-        console.log(
-          "TOURSAFE - TOUR STARTED"
-        );
+                headers: {
+                  "Content-Type":
+                    "application/json",
+                },
 
-        console.log(
-          "Live location is now being sent to server."
-        );
+                body:
+                  JSON.stringify({
+                    userId,
 
-        console.log(
-          "================================="
-        );
+                    latitude:
+                      location.lat,
 
-      } catch (error) {
+                    longitude:
+                      location.lng,
 
-        console.error(
-          "TourSafe Start Tour Error:",
-          error
-        );
+                    risk,
 
-        setTourStarted(false);
+                    message:
+                      "Tourist SOS emergency alert",
+                  }),
+              }
+            );
 
-        setApiError(
-          error.message ||
-          "Unable to start tour."
-        );
+          if (!response.ok) {
+            throw new Error(
+              "SOS request failed"
+            );
+          }
 
+          setMessage(
+            "SOS alert sent."
+          );
+        } catch (error) {
+          console.error(
+            "SOS backend error:",
+            error
+          );
+
+          setMessage(
+            "Unable to send SOS alert."
+          );
+        }
       } finally {
-
-        setStartingTour(false);
+        setSosLoading(false);
       }
     };
 
-  // ====================================================
-  // STOP TOUR
-  // ====================================================
-
-  const stopTour =
-    async () => {
-
-      if (stoppingTour) {
-        return;
-      }
-
-      setStoppingTour(true);
-
-      setApiError("");
-
-      try {
-
-        // ---------------------------------------------
-        // STOP GPS IMMEDIATELY
-        // ---------------------------------------------
-
-        stopLocationMonitoring();
-
-        // ---------------------------------------------
-        // UPDATE UI
-        // ---------------------------------------------
-
-        setTourStarted(false);
-
-        setRiskPercentage(12);
-
-        // ---------------------------------------------
-        // STOP DATABASE TRACKING
-        // ---------------------------------------------
-
-        await stopTourOnServer();
-
-        console.log(
-          "================================="
-        );
-
-        console.log(
-          "TOURSAFE - TOUR STOPPED"
-        );
-
-        console.log(
-          "================================="
-        );
-
-      } catch (error) {
-
-        console.error(
-          "TourSafe Stop Tour Error:",
-          error
-        );
-
-        setApiError(
-          error.message ||
-          "Unable to stop tour."
-        );
-
-      } finally {
-
-        setStoppingTour(false);
-      }
-    };
-
-  // ====================================================
-  // CLEANUP GPS + HEARTBEAT
-  // ====================================================
+  // ==========================================================
+  // CLEANUP
+  // ==========================================================
 
   useEffect(() => {
-
     return () => {
-
       if (
-        watchIdRef.current !== null
+        watchIdRef.current !==
+        null
       ) {
-
         navigator.geolocation.clearWatch(
           watchIdRef.current
         );
@@ -1482,9 +2178,8 @@ const Map = () => {
       }
 
       if (
-        heartbeatRef.current !== null
+        heartbeatRef.current
       ) {
-
         clearInterval(
           heartbeatRef.current
         );
@@ -1492,758 +2187,563 @@ const Map = () => {
         heartbeatRef.current =
           null;
       }
-
     };
-
   }, []);
 
-  // ====================================================
-  // GO TO CURRENT LOCATION
-  // ====================================================
-
-  const goToCurrentLocation =
-    () => {
-
-      if (
-        !location ||
-        !mapRef.current
-      ) {
-        return;
-      }
-
-      mapRef.current.panTo({
-        lat:
-          location.lat,
-
-        lng:
-          location.lng,
-      });
-
-      mapRef.current.setZoom(
-        16
-      );
-
-      console.log(
-        "TourSafe: Map moved to current location."
-      );
-    };
-
-  // ====================================================
-  // SOS
-  // ====================================================
-
-  const activateSOS =
-    () => {
-
-      setSosActive(true);
-
-      console.log(
-        "================================="
-      );
-
-      console.log(
-        "TOURSAFE - SOS ALERT"
-      );
-
-      console.log(
-        "SOS ACTIVATED"
-      );
-
-      if (location) {
-
-        console.log(
-          "SOS Latitude:",
-          location.lat
-        );
-
-        console.log(
-          "SOS Longitude:",
-          location.lng
-        );
-
-        console.log(
-          "SOS Accuracy:",
-          location.accuracy,
-          "meters"
-        );
-      }
-
-      console.log(
-        "================================="
-      );
-    };
-
-  // ====================================================
-  // CANCEL SOS
-  // ====================================================
-
-  const cancelSOS =
-    () => {
-
-      setSosActive(false);
-
-      console.log(
-        "TourSafe: SOS cancelled."
-      );
-    };
-
-  // ====================================================
-  // MISSING GOOGLE MAP API KEY
-  // ====================================================
-
-  if (!hasGoogleMapsKey) {
-
-    return (
-      <div className="map-error">
-
-        <h3>
-          Google Maps API Key Missing
-        </h3>
-
-        <p>
-          Please add{" "}
-          <strong>
-            VITE_GOOGLE_MAPS_API_KEY
-          </strong>{" "}
-          to your .env file.
-        </p>
-
-      </div>
-    );
-  }
-
-  // ====================================================
-  // LOCATION LOADING
-  // ====================================================
-
-  if (locationLoading) {
-
-    return (
-      <div className="map-loading">
-
-        <div className="map-loading-content">
-
-          <div className="loading-spinner"></div>
-
-          <p>
-            Getting your current location...
-          </p>
-
-        </div>
-
-      </div>
-    );
-  }
-
-  // ====================================================
-  // PAGE
-  // ====================================================
+  // ==========================================================
+  // RENDER
+  // ==========================================================
 
   return (
-    <>
-      <Navbar />
+    <div className="toursafe-map-page">
 
-      <div className="tour-map-page">
+      {/* ====================================================
+          NAVBAR
+      ===================================================== */}
+
+      {/* <Navbar /> */}
+
+      {/* ====================================================
+          MAP
+      ===================================================== */}
+
+      <div
+        ref={mapContainerRef}
+        className="toursafe-map"
+      />
+
+      {/* ====================================================
+          SEARCH
+      ===================================================== */}
+
+      <div className="toursafe-search-wrapper">
+
+        <div className="toursafe-search-box">
+
+          <Search
+            size={20}
+            className="toursafe-search-icon"
+          />
+
+          <input
+            type="text"
+            value={searchText}
+            placeholder="Search destination..."
+            onChange={(event) => {
+              const value =
+                event.target.value;
+
+              setSearchText(value);
+
+              if (!value.trim()) {
+                setSearchResults([]);
+
+                setShowSearchResults(
+                  false
+                );
+              }
+            }}
+            onKeyDown={
+              handleSearchKeyDown
+            }
+          />
+
+          {searchText && (
+            <button
+              type="button"
+              className="toursafe-search-clear"
+              onClick={() => {
+                setSearchText("");
+
+                setSearchResults([]);
+
+                setShowSearchResults(
+                  false
+                );
+              }}
+            >
+              <X size={17} />
+            </button>
+          )}
+
+          <button
+            type="button"
+            className="toursafe-search-button"
+            onClick={
+              searchPlaces
+            }
+            disabled={searching}
+          >
+            {searching ? (
+              <RefreshCw
+                size={17}
+                className="toursafe-spin"
+              />
+            ) : (
+              "Search"
+            )}
+          </button>
+
+        </div>
 
         {/* ==================================================
-            GOOGLE MAP
+            SEARCH RESULTS
         ================================================== */}
 
-        <APIProvider
-          apiKey={
-            GOOGLE_MAPS_API_KEY
-          }
-        >
+        {showSearchResults &&
+          searchResults.length > 0 && (
+            <div className="toursafe-search-results">
 
-          <GoogleMap
-            defaultCenter={
-              location ||
-              FALLBACK_LOCATION
-            }
+              {searchResults.map(
+                (place) => (
+                  <button
+                    type="button"
+                    key={
+                      place.place_id
+                    }
+                    className="toursafe-search-result"
+                    onClick={() =>
+                      selectPlace(
+                        place
+                      )
+                    }
+                  >
 
-            defaultZoom={16}
+                    <div className="toursafe-result-icon">
+                      <MapPin
+                        size={17}
+                      />
+                    </div>
 
-            mapId="TOURSAFE_MAP"
+                    <div className="toursafe-result-text">
 
-            gestureHandling="greedy"
+                      <strong>
+                        {place.display_name
+                          ?.split(",")
+                          ?.slice(
+                            0,
+                            2
+                          )
+                          ?.join(",")}
+                      </strong>
 
-            mapTypeId={
-              mapType
-            }
+                      <span>
+                        {
+                          place.display_name
+                        }
+                      </span>
 
-            fullscreenControl={true}
+                    </div>
 
-            zoomControl={true}
-
-            streetViewControl={false}
-
-            mapTypeControl={false}
-          >
-
-            {/* MAP CONTROLLER */}
-
-            <MapController
-              onMapReady={
-                handleMapReady
-              }
-            />
-
-            {/* CURRENT LOCATION */}
-
-            {showLocation &&
-              location && (
-
-                <CurrentLocationMarker
-                  location={
-                    location
-                  }
-                />
-
+                  </button>
+                )
               )}
 
-          </GoogleMap>
-
-        </APIProvider>
-
-        {/* ==================================================
-            TOP BAR
-        ================================================== */}
-
-        <div className="map-top-bar">
-
-          <div className="tour-safe-title">
-
-            <div className="tour-safe-logo">
-              TS
             </div>
+          )}
 
-            <div>
+      </div>
 
-              <h2>
-                TourSafe
-              </h2>
+      {/* ====================================================
+          STATUS CARD
+      ===================================================== */}
 
-              <span>
-                Tourist Safety Monitoring
-              </span>
+      <div className="toursafe-status-card">
 
-            </div>
-
-          </div>
+        <div className="toursafe-status-main">
 
           <div
-            className={`tour-status ${
+            className={
               tourStarted
-                ? "tour-active"
-                : "tour-inactive"
-            }`}
-          >
+                ? "toursafe-status-indicator active"
+                : "toursafe-status-indicator"
+            }
+          />
 
-            <span className="status-dot"></span>
+          <div>
 
-            {tourStarted
-              ? "Tour Active"
-              : "Ready to Start"}
-
-          </div>
-
-        </div>
-
-        {/* ==================================================
-            API ERROR
-        ================================================== */}
-
-        {apiError && (
-
-          <div className="location-error">
-
-            <Warning />
+            <strong>
+              {tourStarted
+                ? "Tour Active"
+                : "Ready to Explore"}
+            </strong>
 
             <span>
-              {apiError}
+              {tracking
+                ? "Live location tracking"
+                : "Location available"}
             </span>
 
-            <button
-              onClick={() =>
-                setApiError("")
-              }
-              aria-label="Close error"
-            >
-              <Close />
-            </button>
-
           </div>
-
-        )}
-
-        {/* ==================================================
-            RISK CARD
-        ================================================== */}
-
-        <div className="risk-card">
-
-          <div className="risk-card-header">
-
-            <div className="risk-icon">
-              <Security />
-            </div>
-
-            <div>
-
-              <span className="risk-label">
-                Current Risk
-              </span>
-
-              <h3>
-                {riskPercentage}%
-              </h3>
-
-            </div>
-
-          </div>
-
-          <div className="risk-progress">
-
-            <div
-              className="risk-progress-value"
-              style={{
-                width:
-                  `${riskPercentage}%`,
-              }}
-            />
-
-          </div>
-
-          <span className="risk-description">
-
-            {tourStarted
-              ? riskPercentage < 20
-                ? "Low Risk Area"
-                : riskPercentage < 50
-                  ? "Moderate Risk"
-                  : "High Risk Area"
-              : "Monitoring inactive"}
-
-          </span>
 
         </div>
 
-        {/* ==================================================
-            START / STOP TOUR
-        ================================================== */}
+        <div className="toursafe-risk">
 
-        <div className="tour-control">
-
-          {!tourStarted ? (
-
-            <button
-              className="start-tour-button"
-              onClick={
-                startTour
-              }
-              disabled={
-                startingTour ||
-                !location
-              }
-            >
-
-              <PlayArrow />
-
-              <span>
-                {startingTour
-                  ? "Starting..."
-                  : "Start Tour"}
-              </span>
-
-            </button>
-
+          {risk < 20 ? (
+            <ShieldCheck
+              size={18}
+            />
           ) : (
+            <ShieldAlert
+              size={18}
+            />
+          )}
+
+          <strong>
+            {risk}%
+          </strong>
+
+        </div>
+
+      </div>
+
+      {/* ====================================================
+          DESTINATION CARD
+      ===================================================== */}
+
+      {destination && (
+        <div className="toursafe-destination-card">
+
+          <div className="toursafe-destination-top">
+
+            <div className="toursafe-destination-symbol">
+              <MapPin size={19} />
+            </div>
+
+            <div className="toursafe-destination-details">
+
+              <small>
+                DESTINATION
+              </small>
+
+              <strong>
+                {
+                  destination.display_name
+                }
+              </strong>
+
+            </div>
 
             <button
-              className="stop-tour-button"
+              type="button"
+              className="toursafe-destination-close"
               onClick={
-                stopTour
-              }
-              disabled={
-                stoppingTour
+                clearDestination
               }
             >
-
-              <Stop />
-
-              <span>
-                {stoppingTour
-                  ? "Stopping..."
-                  : "Stop Tour"}
-              </span>
-
+              <X size={17} />
             </button>
 
+          </div>
+
+          {/* ==================================================
+              ROUTE SUMMARY
+          ================================================== */}
+
+          {(distance !== null ||
+            duration !== null) && (
+            <div className="toursafe-route-summary">
+
+              <div>
+
+                <RouteIcon size={18} />
+
+                <div>
+
+                  <small>
+                    Distance
+                  </small>
+
+                  <strong>
+                    {formatDistance(
+                      distance
+                    )}
+                  </strong>
+
+                </div>
+
+              </div>
+
+              <div>
+
+                <Clock size={18} />
+
+                <div>
+
+                  <small>
+                    Estimated time
+                  </small>
+
+                  <strong>
+                    {formatDuration(
+                      duration
+                    )}
+                  </strong>
+
+                </div>
+
+              </div>
+
+            </div>
+          )}
+
+          {routeLoading && (
+            <div className="toursafe-route-loading">
+
+              <RefreshCw
+                size={16}
+                className="toursafe-spin"
+              />
+
+              Calculating route...
+
+            </div>
+          )}
+
+          {routeError && (
+            <div className="toursafe-route-error">
+              {routeError}
+            </div>
           )}
 
         </div>
+      )}
 
-        {/* ==================================================
-            SOS
-        ================================================== */}
+      {/* ====================================================
+          MESSAGE
+      ===================================================== */}
+
+      {message && (
+        <div className="toursafe-message">
+          {message}
+        </div>
+      )}
+
+      {/* ====================================================
+          MAP TOOLS
+      ===================================================== */}
+
+      <div className="toursafe-map-tools">
 
         <button
-          className={`sos-button ${
-            sosActive
-              ? "sos-active"
-              : ""
-          }`}
+          type="button"
+          className={
+            followLocation
+              ? "toursafe-map-tool active"
+              : "toursafe-map-tool"
+          }
+          title="My Location"
           onClick={
-            activateSOS
+            goToMyLocation
+          }
+        >
+          <LocateFixed size={20} />
+        </button>
+
+        <button
+          type="button"
+          className={
+            followLocation
+              ? "toursafe-map-tool active"
+              : "toursafe-map-tool"
+          }
+          title="Follow location"
+          onClick={
+            toggleFollow
+          }
+        >
+          <Navigation size={20} />
+        </button>
+
+        <button
+          type="button"
+          className={
+            showLayers
+              ? "toursafe-map-tool active"
+              : "toursafe-map-tool"
+          }
+          title="Map style"
+          onClick={() =>
+            setShowLayers(
+              (previous) =>
+                !previous
+            )
+          }
+        >
+          <Layers size={20} />
+        </button>
+
+        <button
+          type="button"
+          className="toursafe-map-tool"
+          title="Refresh location"
+          onClick={() =>
+            getCurrentLocation(true)
+          }
+        >
+          <Crosshair size={20} />
+        </button>
+
+      </div>
+
+      {/* ====================================================
+          STYLE MENU
+      ===================================================== */}
+
+      {showLayers && (
+        <div className="toursafe-style-menu">
+
+          <strong>
+            Map Style
+          </strong>
+
+          <button
+            type="button"
+            className={
+              mapStyleMode ===
+              "standard"
+                ? "active"
+                : ""
+            }
+            onClick={() => {
+              changeMapStyle(
+                "standard"
+              );
+
+              setShowLayers(false);
+            }}
+          >
+            Standard
+          </button>
+
+          <button
+            type="button"
+            className={
+              mapStyleMode ===
+              "bright"
+                ? "active"
+                : ""
+            }
+            onClick={() => {
+              changeMapStyle(
+                "bright"
+              );
+
+              setShowLayers(false);
+            }}
+          >
+            Bright
+          </button>
+
+        </div>
+      )}
+
+      {/* ====================================================
+          BOTTOM PANEL
+      ===================================================== */}
+
+      <div className="toursafe-bottom-panel">
+
+        {!tourStarted ? (
+          <button
+            type="button"
+            className="toursafe-start-button"
+            disabled={
+              !destination ||
+              routeLoading
+            }
+            onClick={
+              startTour
+            }
+          >
+
+            <Play
+              size={19}
+              fill="currentColor"
+            />
+
+            <span>
+              {routeLoading
+                ? "Preparing Route..."
+                : "Start Tour"}
+            </span>
+
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="toursafe-stop-button"
+            onClick={
+              stopTour
+            }
+          >
+
+            <Square
+              size={18}
+              fill="currentColor"
+            />
+
+            <span>
+              Stop Tour
+            </span>
+
+          </button>
+        )}
+
+        {/* SOS */}
+
+        <button
+          type="button"
+          className="toursafe-sos-button"
+          onClick={
+            sendSOS
+          }
+          disabled={
+            sosLoading
           }
         >
 
-          <Emergency />
+          <AlertTriangle
+            size={18}
+          />
 
           <span>
-            {sosActive
-              ? "SOS ACTIVE"
-              : "SOS ALERT"}
+            {sosLoading
+              ? "Sending..."
+              : "SOS"}
           </span>
 
         </button>
 
-        {/* ==================================================
-            MAP CONTROLS
-        ================================================== */}
+      </div>
 
-        <div className="map-controls">
+      {/* ====================================================
+          CURRENT LOCATION LABEL
+      ===================================================== */}
 
-          {/* MY LOCATION */}
+      <div className="toursafe-location-label">
 
-          <button
-            className="map-control-button"
-            onClick={
-              goToCurrentLocation
-            }
-            disabled={
-              !location
-            }
-            title="My Location"
-            aria-label="Go to my location"
-          >
+        <div className="toursafe-location-label-dot" />
 
-            <MyLocation />
+        <div>
 
-          </button>
+          <strong>
+            Your Location
+          </strong>
 
-          {/* SETTINGS */}
-
-          <button
-            className={`map-control-button ${
-              settingsOpen
-                ? "control-active"
-                : ""
-            }`}
-            onClick={() =>
-              setSettingsOpen(
-                (previous) =>
-                  !previous
-              )
-            }
-            title="Map Settings"
-            aria-label="Map settings"
-          >
-
-            <Settings />
-
-          </button>
+          <span>
+            {accuracy
+              ? `Accuracy ±${Math.round(
+                  accuracy
+                )} m`
+              : "Getting location..."}
+          </span>
 
         </div>
 
-        {/* ==================================================
-            SETTINGS PANEL
-        ================================================== */}
-
-        {settingsOpen && (
-
-          <div className="map-settings-panel">
-
-            {/* HEADER */}
-
-            <div className="settings-header">
-
-              <div>
-
-                <h3>
-                  Map Settings
-                </h3>
-
-                <span>
-                  Customize your map
-                </span>
-
-              </div>
-
-              <button
-                className="settings-close"
-                onClick={() =>
-                  setSettingsOpen(
-                    false
-                  )
-                }
-                aria-label="Close settings"
-              >
-
-                <Close />
-
-              </button>
-
-            </div>
-
-            {/* MAP TYPE */}
-
-            <div className="settings-section">
-
-              <h4>
-                Map Type
-              </h4>
-
-              <div className="map-type-options">
-
-                <button
-                  className={
-                    mapType ===
-                    "roadmap"
-                      ? "map-type-active"
-                      : ""
-                  }
-                  onClick={() =>
-                    setMapType(
-                      "roadmap"
-                    )
-                  }
-                >
-
-                  <MapIcon />
-
-                  <span>
-                    Roadmap
-                  </span>
-
-                </button>
-
-                <button
-                  className={
-                    mapType ===
-                    "satellite"
-                      ? "map-type-active"
-                      : ""
-                  }
-                  onClick={() =>
-                    setMapType(
-                      "satellite"
-                    )
-                  }
-                >
-
-                  <Satellite />
-
-                  <span>
-                    Satellite
-                  </span>
-
-                </button>
-
-                <button
-                  className={
-                    mapType ===
-                    "terrain"
-                      ? "map-type-active"
-                      : ""
-                  }
-                  onClick={() =>
-                    setMapType(
-                      "terrain"
-                    )
-                  }
-                >
-
-                  <Terrain />
-
-                  <span>
-                    Terrain
-                  </span>
-
-                </button>
-
-              </div>
-
-            </div>
-
-            {/* LOCATION SETTINGS */}
-
-            <div className="settings-section">
-
-              <h4>
-                Location
-              </h4>
-
-              <label className="setting-toggle">
-
-                <div>
-
-                  <LocationOn />
-
-                  <span>
-                    Show My Location
-                  </span>
-
-                </div>
-
-                <input
-                  type="checkbox"
-                  checked={
-                    showLocation
-                  }
-                  onChange={(e) =>
-                    setShowLocation(
-                      e.target.checked
-                    )
-                  }
-                />
-
-              </label>
-
-              <label className="setting-toggle">
-
-                <div>
-
-                  <MyLocation />
-
-                  <span>
-                    Follow My Location
-                  </span>
-
-                </div>
-
-                <input
-                  type="checkbox"
-                  checked={
-                    followLocation
-                  }
-                  onChange={(e) =>
-                    setFollowLocation(
-                      e.target.checked
-                    )
-                  }
-                />
-
-              </label>
-
-            </div>
-
-            {/* MONITORING STATUS */}
-
-            <div className="settings-monitoring">
-
-              <div className="monitoring-icon">
-
-                {tourStarted
-                  ? <LocationOn />
-                  : <Warning />}
-
-              </div>
-
-              <div>
-
-                <strong>
-                  Location Monitoring
-                </strong>
-
-                <span>
-
-                  {tourStarted
-                    ? "Currently active"
-                    : "Inactive until tour starts"}
-
-                </span>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        )}
-
-        {/* ==================================================
-            LOCATION ERROR
-        ================================================== */}
-
-        {locationError && (
-
-          <div className="location-error">
-
-            <Warning />
-
-            <span>
-              {locationError}
-            </span>
-
-            <button
-              onClick={() =>
-                setLocationError("")
-              }
-              aria-label="Close location error"
-            >
-
-              <Close />
-
-            </button>
-
-          </div>
-
-        )}
-
-        {/* ==================================================
-            SOS ACTIVE PANEL
-        ================================================== */}
-
-        {sosActive && (
-
-          <div className="sos-alert-panel">
-
-            <div className="sos-alert-icon">
-              <Emergency />
-            </div>
-
-            <div>
-
-              <strong>
-                SOS Alert Active
-              </strong>
-
-              <span>
-                Emergency assistance has been requested.
-              </span>
-
-            </div>
-
-            <button
-              onClick={
-                cancelSOS
-              }
-            >
-              Cancel
-            </button>
-
-          </div>
-
-        )}
-
       </div>
-    </>
+
+    </div>
   );
-};
-
-// ======================================================
-// EXPORT
-// ======================================================
-
-export default Map;
+}

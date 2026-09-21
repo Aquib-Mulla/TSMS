@@ -1697,3 +1697,1561 @@ td strong {
   }
 
 }
+
+/* ============================================================================================================================ */
+/* ============================================================
+   TOUrSAFE ADMIN LIVE MAP
+   ============================================================ */
+
+.live-map-page {
+  width: 100%;
+  max-width: 100%;
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.live-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+}
+
+.live-map-header h1 {
+  margin: 0;
+
+  color: #000000;
+
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.live-map-header p {
+  margin: 5px 0 0;
+
+  color: #555555;
+
+  font-size: 13px;
+}
+
+
+/* ============================================================
+   REFRESH BUTTON
+   ============================================================ */
+
+.refresh-map-btn {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+
+  min-width: 100px;
+  height: 38px;
+
+  padding: 0 15px;
+
+  border: 0;
+  border-radius: 7px;
+
+  background: #0f766e;
+
+  color: #ffffff;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.refresh-map-btn:hover {
+  background: #095f59;
+}
+
+.refresh-map-btn:active {
+  transform: scale(0.97);
+}
+
+.refresh-map-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.refresh-spinning {
+  animation:
+    toursafeSpin 0.9s linear infinite;
+}
+
+@keyframes toursafeSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* ============================================================
+   ERROR
+   ============================================================ */
+
+.live-map-error {
+  margin-bottom: 12px;
+
+  padding: 10px 13px;
+
+  border: 1px solid #f0b4b4;
+
+  border-radius: 7px;
+
+  background: #fff6f6;
+
+  color: #000000;
+
+  font-size: 12px;
+}
+
+
+/* ============================================================
+   STATISTICS
+   ============================================================ */
+
+.live-map-stats {
+  display: grid;
+
+  grid-template-columns:
+    repeat(4, minmax(0, 1fr));
+
+  gap: 14px;
+
+  margin-bottom: 18px;
+}
+
+.map-stat {
+  min-height: 72px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  padding: 13px 15px;
+
+  background: #ffffff;
+
+  border: 1px solid #e1e5e5;
+
+  border-radius: 8px;
+}
+
+.map-stat-icon {
+  width: 39px;
+  height: 39px;
+
+  flex: 0 0 39px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 7px;
+
+  background: #0f766e;
+
+  color: #ffffff;
+}
+
+.map-stat span {
+  display: block;
+
+  margin-bottom: 2px;
+
+  color: #666666;
+
+  font-size: 11px;
+}
+
+.map-stat strong {
+  display: block;
+
+  color: #000000;
+
+  font-size: 21px;
+
+  line-height: 1;
+}
+
+
+/* ============================================================
+   MAP CONTAINER
+   ============================================================ */
+
+.live-map-container {
+  position: relative;
+
+  width: 100%;
+
+  height: 605px;
+
+  min-height: 520px;
+
+  overflow: hidden;
+
+  border: 1px solid #dfe4e4;
+
+  border-radius: 8px;
+
+  background: #eeeeee;
+
+  box-shadow:
+    0 2px 8px
+    rgba(0, 0, 0, 0.06);
+}
+
+
+/* ============================================================
+   MAP
+   ============================================================ */
+
+.admin-live-map {
+  position: absolute;
+
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+}
+
+.admin-live-map .maplibregl-canvas {
+  outline: none;
+}
+
+
+/* ============================================================
+   MAPLIBRE CONTROLS
+   ============================================================ */
+
+.live-map-container
+.maplibregl-ctrl-group {
+  overflow: hidden;
+
+  border: 1px solid
+    rgba(0, 0, 0, 0.12);
+
+  border-radius: 7px;
+
+  box-shadow:
+    0 2px 8px
+    rgba(0, 0, 0, 0.14);
+}
+
+.live-map-container
+.maplibregl-ctrl-group button {
+  width: 32px;
+  height: 32px;
+
+  background: #ffffff;
+}
+
+.live-map-container
+.maplibregl-ctrl-group button:hover {
+  background: #f2f7f6;
+}
+
+
+/* ============================================================
+   SEARCH PANEL
+   ============================================================ */
+
+.map-search-panel {
+  position: absolute;
+
+  top: 12px;
+  left: 12px;
+
+  width: 270px;
+
+  z-index: 50;
+
+  overflow: hidden;
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 4px 18px
+    rgba(0, 0, 0, 0.18);
+}
+
+
+/* ============================================================
+   SEARCH BOX
+   ============================================================ */
+
+.map-search {
+  height: 45px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 8px;
+
+  padding: 0 12px;
+
+  border-bottom: 1px solid #eeeeee;
+
+  color: #0f766e;
+}
+
+.map-search input {
+  width: 100%;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #000000;
+
+  font-size: 12px;
+}
+
+.map-search input::placeholder {
+  color: #777777;
+}
+
+.map-search-clear {
+  width: 24px;
+  height: 24px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 4px;
+
+  background: transparent;
+
+  color: #555555;
+
+  cursor: pointer;
+}
+
+.map-search-clear:hover {
+  background: #f1f1f1;
+
+  color: #0f766e;
+}
+
+
+/* ============================================================
+   TOURIST LIST
+   ============================================================ */
+
+.map-user-list {
+  max-height: 260px;
+
+  overflow-y: auto;
+}
+
+.map-user-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.map-user-list::-webkit-scrollbar-thumb {
+  background: #cccccc;
+
+  border-radius: 10px;
+}
+
+
+/* ============================================================
+   TOURIST LIST ITEM
+   ============================================================ */
+
+.map-user-item {
+  width: 100%;
+
+  min-height: 54px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 8px 12px;
+
+  border: 0;
+
+  border-bottom:
+    1px solid #f0f0f0;
+
+  background: #ffffff;
+
+  text-align: left;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease;
+}
+
+.map-user-item:hover {
+  background: #f4f9f8;
+}
+
+.map-user-item.selected {
+  background: #eaf6f4;
+}
+
+
+/* ============================================================
+   LIST STATUS DOT
+   ============================================================ */
+
+.map-user-status {
+  width: 9px;
+  height: 9px;
+
+  flex: 0 0 9px;
+
+  border-radius: 50%;
+}
+
+.map-user-status.safe {
+  background: #0f766e;
+}
+
+.map-user-status.warning {
+  background: #f59e0b;
+}
+
+.map-user-status.danger {
+  background: #dc2626;
+}
+
+
+/* ============================================================
+   LIST INFO
+   ============================================================ */
+
+.map-user-info {
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+}
+
+.map-user-info strong {
+  overflow: hidden;
+
+  color: #000000;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.map-user-info span {
+  display: flex;
+
+  align-items: center;
+
+  gap: 3px;
+
+  margin-top: 2px;
+
+  color: #777777;
+
+  font-size: 9px;
+}
+
+
+/* ============================================================
+   EMPTY LIST
+   ============================================================ */
+
+.map-empty {
+  padding: 18px 12px;
+
+  color: #777777;
+
+  font-size: 11px;
+
+  text-align: center;
+}
+
+
+/* ============================================================
+   TOURIST MARKER
+   ============================================================ */
+
+.admin-tourist-marker {
+  position: relative;
+
+  width: 1px;
+  height: 1px;
+
+  z-index: 30;
+
+  cursor: pointer;
+}
+
+
+/* ============================================================
+   MARKER WRAPPER
+   ============================================================ */
+
+.tourist-marker-wrapper {
+  position: absolute;
+
+  left: 0;
+  top: 0;
+
+  width: 150px;
+  height: 115px;
+
+  transform:
+    translate(-50%, -50%);
+
+  pointer-events: none;
+}
+
+
+/* ============================================================
+   LOCATION ACCURACY RING
+   ============================================================ */
+
+.tourist-location-ring {
+  position: absolute;
+
+  left: 50%;
+  top: 43px;
+
+  width: 48px;
+  height: 48px;
+
+  transform:
+    translate(-50%, -50%);
+
+  border: 2px solid
+    rgba(15, 118, 110, 0.48);
+
+  border-radius: 50%;
+
+  background:
+    rgba(15, 118, 110, 0.10);
+
+  box-shadow:
+    0 0 0 6px
+      rgba(15, 118, 110, 0.06);
+
+  pointer-events: none;
+}
+
+
+/* ============================================================
+   PULSE
+   ============================================================ */
+
+.tourist-marker-pulse {
+  position: absolute;
+
+  left: 50%;
+  top: 43px;
+
+  width: 27px;
+  height: 27px;
+
+  transform:
+    translate(-50%, -50%);
+
+  border-radius: 50%;
+
+  background:
+    rgba(15, 118, 110, 0.30);
+
+  animation:
+    touristPulse 1.8s
+    ease-out infinite;
+
+  pointer-events: none;
+}
+
+@keyframes touristPulse {
+
+  0% {
+    transform:
+      translate(-50%, -50%)
+      scale(0.75);
+
+    opacity: 0.75;
+  }
+
+  70% {
+    transform:
+      translate(-50%, -50%)
+      scale(1.75);
+
+    opacity: 0.16;
+  }
+
+  100% {
+    transform:
+      translate(-50%, -50%)
+      scale(2.1);
+
+    opacity: 0;
+  }
+}
+
+
+/* ============================================================
+   TOURIST PIN
+   ============================================================ */
+
+.tourist-pin {
+  position: absolute;
+
+  left: 50%;
+  top: 43px;
+
+  width: 38px;
+  height: 48px;
+
+  transform:
+    translate(-50%, -50%);
+
+  pointer-events: auto;
+
+  z-index: 5;
+
+  filter:
+    drop-shadow(
+      0 3px 5px
+      rgba(0, 0, 0, 0.28)
+    );
+
+  transition:
+    transform 0.18s ease;
+}
+
+
+/* ============================================================
+   PIN POINT
+   ============================================================ */
+
+.tourist-pin::after {
+  content: "";
+
+  position: absolute;
+
+  left: 50%;
+  bottom: 1px;
+
+  width: 17px;
+  height: 17px;
+
+  transform:
+    translateX(-50%)
+    rotate(45deg);
+
+  border-radius:
+    0 0 4px 0;
+
+  background: #0f766e;
+
+  z-index: -1;
+}
+
+
+/* ============================================================
+   PIN HEAD
+   ============================================================ */
+
+.tourist-pin-head {
+  position: absolute;
+
+  left: 50%;
+  top: 0;
+
+  width: 38px;
+  height: 38px;
+
+  transform:
+    translateX(-50%);
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border:
+    3px solid #ffffff;
+
+  border-radius: 50%;
+
+  background: #0f766e;
+
+  box-shadow:
+    0 3px 9px
+    rgba(0, 0, 0, 0.28);
+}
+
+.tourist-pin-head span {
+  color: #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 800;
+
+  line-height: 1;
+
+  user-select: none;
+}
+
+
+/* ============================================================
+   SAFE
+   ============================================================ */
+
+.admin-tourist-marker.safe
+.tourist-pin-head {
+  background: #0f766e;
+}
+
+.admin-tourist-marker.safe
+.tourist-pin::after {
+  background: #0f766e;
+}
+
+.admin-tourist-marker.safe
+.tourist-location-ring {
+  border-color:
+    rgba(15, 118, 110, 0.48);
+
+  background:
+    rgba(15, 118, 110, 0.10);
+}
+
+.admin-tourist-marker.safe
+.tourist-marker-pulse {
+  background:
+    rgba(15, 118, 110, 0.30);
+}
+
+
+/* ============================================================
+   WARNING
+   ============================================================ */
+
+.admin-tourist-marker.warning
+.tourist-pin-head {
+  background: #f59e0b;
+}
+
+.admin-tourist-marker.warning
+.tourist-pin::after {
+  background: #f59e0b;
+}
+
+.admin-tourist-marker.warning
+.tourist-location-ring {
+  border-color:
+    rgba(245, 158, 11, 0.55);
+
+  background:
+    rgba(245, 158, 11, 0.10);
+}
+
+.admin-tourist-marker.warning
+.tourist-marker-pulse {
+  background:
+    rgba(245, 158, 11, 0.30);
+}
+
+
+/* ============================================================
+   DANGER
+   ============================================================ */
+
+.admin-tourist-marker.danger
+.tourist-pin-head {
+  background: #dc2626;
+}
+
+.admin-tourist-marker.danger
+.tourist-pin::after {
+  background: #dc2626;
+}
+
+.admin-tourist-marker.danger
+.tourist-location-ring {
+  border-color:
+    rgba(220, 38, 38, 0.58);
+
+  background:
+    rgba(220, 38, 38, 0.10);
+}
+
+.admin-tourist-marker.danger
+.tourist-marker-pulse {
+  background:
+    rgba(220, 38, 38, 0.30);
+}
+
+
+/* ============================================================
+   TOURIST LABEL
+   ============================================================ */
+
+.tourist-marker-label {
+  position: absolute;
+
+  left: 50%;
+  top: 76px;
+
+  transform:
+    translateX(-50%);
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  min-width: 92px;
+
+  padding:
+    5px 9px;
+
+  border:
+    1px solid
+    rgba(0, 0, 0, 0.10);
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 10px
+    rgba(0, 0, 0, 0.16);
+
+  white-space: nowrap;
+
+  z-index: 10;
+
+  pointer-events: none;
+}
+
+.tourist-label-name {
+  max-width: 120px;
+
+  overflow: hidden;
+
+  color: #000000;
+
+  font-size: 11px;
+
+  font-weight: 700;
+
+  line-height: 14px;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.tourist-label-status {
+  margin-top: 1px;
+
+  color: #0f766e;
+
+  font-size: 8px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.4px;
+
+  line-height: 11px;
+
+  text-transform: uppercase;
+}
+
+.admin-tourist-marker.warning
+.tourist-label-status {
+  color: #d97706;
+}
+
+.admin-tourist-marker.danger
+.tourist-label-status {
+  color: #dc2626;
+}
+
+
+/* ============================================================
+   HOVER
+   ============================================================ */
+
+.admin-tourist-marker:hover
+.tourist-pin {
+  transform:
+    translate(-50%, -50%)
+    scale(1.12);
+}
+
+.admin-tourist-marker:hover
+.tourist-label {
+  box-shadow:
+    0 5px 15px
+    rgba(0, 0, 0, 0.22);
+}
+
+
+/* ============================================================
+   SELECTED TOURIST
+   ============================================================ */
+
+.admin-tourist-marker.selected {
+  z-index: 100 !important;
+}
+
+.admin-tourist-marker.selected
+.tourist-pin-head {
+  width: 44px;
+  height: 44px;
+
+  border-width: 4px;
+
+  box-shadow:
+    0 0 0 5px
+      rgba(15, 118, 110, 0.18),
+
+    0 4px 13px
+      rgba(0, 0, 0, 0.30);
+}
+
+.admin-tourist-marker.selected
+.tourist-location-ring {
+  width: 66px;
+  height: 66px;
+
+  border-width: 3px;
+
+  box-shadow:
+    0 0 0 8px
+      rgba(15, 118, 110, 0.09);
+}
+
+.admin-tourist-marker.selected
+.tourist-marker-label {
+  border:
+    1px solid #0f766e;
+
+  box-shadow:
+    0 5px 16px
+    rgba(15, 118, 110, 0.22);
+}
+
+
+/* ============================================================
+   POPUP
+   ============================================================ */
+
+.admin-map-popup {
+  width: 280px;
+
+  max-width: 300px;
+
+  color: #000000;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+}
+
+.admin-popup-header {
+  display: flex;
+
+  align-items: center;
+
+  gap: 10px;
+
+  padding-bottom: 10px;
+
+  border-bottom:
+    1px solid #eeeeee;
+}
+
+.admin-popup-avatar {
+  width: 38px;
+  height: 38px;
+
+  flex: 0 0 38px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #0f766e;
+
+  color: #ffffff;
+
+  font-size: 14px;
+
+  font-weight: 800;
+}
+
+.admin-popup-title {
+  min-width: 0;
+}
+
+.admin-popup-title h3 {
+  margin: 0;
+
+  overflow: hidden;
+
+  color: #000000;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.admin-popup-title span {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #777777;
+
+  font-size: 10px;
+}
+
+
+/* ============================================================
+   POPUP STATUS
+   ============================================================ */
+
+.admin-popup-status {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  margin: 10px 0 8px;
+
+  padding: 4px 8px;
+
+  border-radius: 20px;
+
+  font-size: 10px;
+
+  font-weight: 700;
+}
+
+.admin-popup-status span {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: currentColor;
+}
+
+.admin-popup-status.safe {
+  color: #0f766e;
+
+  background:
+    rgba(15, 118, 110, 0.10);
+}
+
+.admin-popup-status.warning {
+  color: #d97706;
+
+  background:
+    rgba(245, 158, 11, 0.11);
+}
+
+.admin-popup-status.danger {
+  color: #dc2626;
+
+  background:
+    rgba(220, 38, 38, 0.10);
+}
+
+
+/* ============================================================
+   POPUP ROW
+   ============================================================ */
+
+.admin-popup-row {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 5px 0;
+
+  border-bottom:
+    1px solid #f1f1f1;
+
+  font-size: 10px;
+}
+
+.admin-popup-row strong {
+  flex: 0 0 auto;
+
+  color: #666666;
+
+  font-weight: 600;
+}
+
+.admin-popup-row span {
+  max-width: 170px;
+
+  overflow-wrap: anywhere;
+
+  color: #000000;
+
+  text-align: right;
+}
+
+
+/* ============================================================
+   POPUP CLOSE
+   ============================================================ */
+
+.maplibregl-popup-close-button {
+  padding: 4px 7px;
+
+  color: #000000;
+
+  font-size: 17px;
+}
+
+.maplibregl-popup-close-button:hover {
+  background: #f2f2f2;
+
+  color: #0f766e;
+}
+
+
+/* ============================================================
+   MAP TOOLBAR
+   ============================================================ */
+
+.admin-map-toolbar {
+  position: absolute;
+
+  right: 12px;
+  bottom: 48px;
+
+  z-index: 40;
+
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 6px;
+
+  padding: 5px;
+
+  border:
+    1px solid
+    rgba(0, 0, 0, 0.10);
+
+  border-radius: 8px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 12px
+    rgba(0, 0, 0, 0.16);
+}
+
+.admin-map-tool {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 0;
+
+  border-radius: 6px;
+
+  background: #ffffff;
+
+  color: #000000;
+
+  cursor: pointer;
+}
+
+.admin-map-tool:hover {
+  background: #eef7f6;
+
+  color: #0f766e;
+}
+
+.admin-map-tool.active {
+  background: #0f766e;
+
+  color: #ffffff;
+}
+
+
+/* ============================================================
+   MAP STYLE MENU
+   ============================================================ */
+
+.admin-map-style-menu {
+  position: absolute;
+
+  right: 57px;
+  bottom: 49px;
+
+  z-index: 45;
+
+  width: 115px;
+
+  overflow: hidden;
+
+  border:
+    1px solid #dddddd;
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 4px 15px
+    rgba(0, 0, 0, 0.16);
+}
+
+.admin-map-style-menu button {
+  width: 100%;
+
+  padding: 9px 11px;
+
+  border: 0;
+
+  border-bottom:
+    1px solid #eeeeee;
+
+  background: #ffffff;
+
+  color: #000000;
+
+  font-size: 11px;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+.admin-map-style-menu button:last-child {
+  border-bottom: 0;
+}
+
+.admin-map-style-menu button:hover {
+  background: #eef7f6;
+
+  color: #0f766e;
+}
+
+
+/* ============================================================
+   LIVE BADGE
+   ============================================================ */
+
+.map-live-indicator {
+  position: absolute;
+
+  top: 12px;
+  right: 12px;
+
+  z-index: 40;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 6px;
+
+  padding:
+    6px 10px;
+
+  border:
+    1px solid
+    rgba(0, 0, 0, 0.08);
+
+  border-radius: 18px;
+
+  background: #ffffff;
+
+  color: #0f766e;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  box-shadow:
+    0 3px 10px
+    rgba(0, 0, 0, 0.13);
+}
+
+.map-live-indicator span {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: #0f766e;
+
+  box-shadow:
+    0 0 0 4px
+      rgba(15, 118, 110, 0.10);
+}
+
+
+/* ============================================================
+   LEGEND
+   ============================================================ */
+
+.map-legend {
+  position: absolute;
+
+  right: 12px;
+  bottom: 12px;
+
+  z-index: 40;
+
+  min-width: 100px;
+
+  padding:
+    10px 12px;
+
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 12px
+    rgba(0, 0, 0, 0.15);
+
+  color: #000000;
+
+  font-size: 10px;
+}
+
+.map-legend strong {
+  display: block;
+
+  margin-bottom: 7px;
+
+  font-size: 10px;
+}
+
+.map-legend div {
+  display: flex;
+
+  align-items: center;
+
+  gap: 7px;
+
+  margin-top: 5px;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+}
+
+.legend-dot.safe {
+  background: #0f766e;
+}
+
+.legend-dot.warning {
+  background: #f59e0b;
+}
+
+.legend-dot.danger {
+  background: #dc2626;
+}
+
+
+/* ============================================================
+   SCALE CONTROL
+   ============================================================ */
+
+.live-map-container
+.maplibregl-ctrl-scale {
+  border-color: #000000;
+
+  background:
+    rgba(255, 255, 255, 0.88);
+
+  color: #000000;
+
+  font-size: 9px;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1100px) {
+
+  .live-map-stats {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+  .live-map-container {
+    height: 580px;
+  }
+
+}
+
+
+@media (max-width: 768px) {
+
+  .live-map-header {
+    align-items: flex-start;
+
+    gap: 12px;
+  }
+
+  .live-map-header h1 {
+    font-size: 23px;
+  }
+
+  .live-map-header p {
+    font-size: 11px;
+  }
+
+  .live-map-stats {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+  }
+
+  .map-stat {
+    min-height: 62px;
+
+    padding: 9px;
+  }
+
+  .map-stat-icon {
+    width: 34px;
+    height: 34px;
+
+    flex-basis: 34px;
+  }
+
+  .live-map-container {
+    height: 520px;
+
+    min-height: 450px;
+  }
+
+  .map-search-panel {
+    width: 230px;
+  }
+
+}
+
+
+@media (max-width: 500px) {
+
+  .live-map-header {
+    flex-direction: column;
+  }
+
+  .refresh-map-btn {
+    width: 100%;
+  }
+
+  .live-map-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .map-stat span {
+    font-size: 9px;
+  }
+
+  .map-stat strong {
+    font-size: 17px;
+  }
+
+  .map-search-panel {
+    left: 8px;
+    top: 8px;
+
+    width:
+      calc(100% - 70px);
+  }
+
+  .map-live-indicator {
+    top: 8px;
+    right: 8px;
+  }
+
+  .admin-map-toolbar {
+    right: 8px;
+    bottom: 85px;
+  }
+
+  .map-legend {
+    right: 8px;
+    bottom: 8px;
+  }
+
+}

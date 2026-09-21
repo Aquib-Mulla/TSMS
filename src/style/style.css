@@ -1334,1587 +1334,6 @@
 
 
 /* ==================================================================================================== */
-/* =====================================================
-   TOURSAFE MAP PAGE
-===================================================== */
-
-.tour-map-page {
-  position: relative;
-
-  width: 100%;
-  height: 100vh;
-
-  overflow: hidden;
-
-  background: #ffffff;
-}
-
-
-/* =====================================================
-   GOOGLE MAP
-===================================================== */
-
-.tour-map-page .gm-style {
-  font-family: Arial, sans-serif;
-}
-
-
-/* =====================================================
-   TOP BAR
-===================================================== */
-
-.map-top-bar {
-  position: absolute;
-
-  top: 20px;
-  left: 20px;
-  right: 20px;
-
-  z-index: 20;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  pointer-events: none;
-}
-/* loadin center */
-.map-loading {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100vh;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  background: #ffffff;
-  z-index: 9999;
-}
-
-.map-loading-content {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  text-align: center;
-}
-
-.map-loading-content p {
-  margin: 15px 0 0;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  text-align: center;
-}
-/* loading center close */
-
-.tour-safe-title {
-  display: flex;
-
-  align-items: center;
-
-  gap: 12px;
-
-  padding: 10px 16px;
-
-  background: #ffffff;
-
-  border-radius: 12px;
-
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.12);
-
-  pointer-events: auto;
-}
-
-
-.tour-safe-logo {
-  width: 40px;
-  height: 40px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  border-radius: 10px;
-
-  background: #0f766e;
-
-  color: #ffffff;
-
-  font-size: 14px;
-
-  font-weight: 800;
-}
-
-
-.tour-safe-title h2 {
-  margin: 0;
-
-  color: #000000;
-
-  font-size: 18px;
-}
-
-
-.tour-safe-title span {
-  display: block;
-
-  margin-top: 2px;
-
-  color: #555555;
-
-  font-size: 11px;
-}
-
-
-/* =====================================================
-   TOUR STATUS
-===================================================== */
-
-.tour-status {
-  display: flex;
-
-  align-items: center;
-
-  gap: 8px;
-
-  padding: 10px 15px;
-
-  background: #ffffff;
-
-  border-radius: 30px;
-
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.12);
-
-  font-size: 13px;
-
-  font-weight: 600;
-
-  pointer-events: auto;
-}
-
-
-.status-dot {
-  width: 9px;
-  height: 9px;
-
-  border-radius: 50%;
-
-  background: #777777;
-}
-
-
-.tour-active {
-  color: #0f766e;
-}
-
-
-.tour-active .status-dot {
-  background: #0f766e;
-
-  box-shadow:
-    0 0 0 4px rgba(15, 118, 110, 0.12);
-}
-
-
-.tour-inactive {
-  color: #555555;
-}
-
-
-/* =====================================================
-   RISK CARD
-===================================================== */
-
-.risk-card {
-  position: absolute;
-
-  top: 95px;
-  left: 20px;
-
-  z-index: 15;
-
-  width: 220px;
-
-  padding: 16px;
-
-  box-sizing: border-box;
-
-  background: #ffffff;
-
-  border-radius: 14px;
-
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.12);
-}
-
-
-.risk-card-header {
-  display: flex;
-
-  align-items: center;
-
-  gap: 12px;
-}
-
-
-.risk-icon {
-  width: 38px;
-  height: 38px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  border-radius: 9px;
-
-  background: rgba(15, 118, 110, 0.1);
-
-  color: #0f766e;
-}
-
-
-.risk-icon svg {
-  font-size: 21px;
-}
-
-
-.risk-label {
-  display: block;
-
-  color: #666666;
-
-  font-size: 11px;
-}
-
-
-.risk-card h3 {
-  margin: 2px 0 0;
-
-  color: #000000;
-
-  font-size: 24px;
-}
-
-
-.risk-progress {
-  width: 100%;
-  height: 6px;
-
-  margin-top: 15px;
-
-  overflow: hidden;
-
-  border-radius: 10px;
-
-  background: #eeeeee;
-}
-
-
-.risk-progress-value {
-  height: 100%;
-
-  border-radius: 10px;
-
-  background: #0f766e;
-
-  transition: width 0.4s ease;
-}
-
-
-.risk-description {
-  display: block;
-
-  margin-top: 8px;
-
-  color: #555555;
-
-  font-size: 11px;
-}
-
-
-/* =====================================================
-   START / STOP TOUR
-===================================================== */
-
-.tour-control {
-  position: absolute;
-
-  left: 50%;
-  bottom: 30px;
-
-  z-index: 20;
-
-  transform: translateX(-50%);
-}
-
-
-.start-tour-button,
-.stop-tour-button {
-  min-width: 190px;
-
-  height: 52px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  gap: 9px;
-
-  padding: 0 25px;
-
-  border: none;
-
-  border-radius: 28px;
-
-  cursor: pointer;
-
-  font-size: 15px;
-
-  font-weight: 700;
-
-  box-shadow:
-    0 5px 20px rgba(0, 0, 0, 0.2);
-
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-
-.start-tour-button {
-  background: #0f766e;
-
-  color: #ffffff;
-}
-
-
-.stop-tour-button {
-  background: #000000;
-
-  color: #ffffff;
-}
-
-
-.start-tour-button:hover,
-.stop-tour-button:hover {
-  transform: translateY(-2px);
-
-  box-shadow:
-    0 8px 25px rgba(0, 0, 0, 0.25);
-}
-
-
-.start-tour-button svg,
-.stop-tour-button svg {
-  font-size: 21px;
-}
-
-
-/* =====================================================
-   SOS BUTTON
-===================================================== */
-
-.sos-button {
-  position: absolute;
-
-  right: 20px;
-  bottom: 30px;
-
-  z-index: 20;
-
-  min-width: 145px;
-
-  height: 50px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  gap: 8px;
-
-  border: 2px solid #000000;
-
-  border-radius: 26px;
-
-  background: #ffffff;
-
-  color: #000000;
-
-  cursor: pointer;
-
-  font-size: 13px;
-
-  font-weight: 800;
-
-  box-shadow:
-    0 5px 20px rgba(0, 0, 0, 0.18);
-
-  transition: all 0.2s ease;
-}
-
-
-.sos-button:hover {
-  background: #000000;
-
-  color: #ffffff;
-}
-
-
-.sos-button svg {
-  font-size: 21px;
-}
-
-
-.sos-button.sos-active {
-  background: #0f766e;
-
-  border-color: #0f766e;
-
-  color: #ffffff;
-}
-
-
-/* =====================================================
-   MAP CONTROLS
-===================================================== */
-
-.map-controls {
-  position: absolute;
-
-  right: 20px;
-  top: 160px;
-
-  z-index: 15;
-
-  display: flex;
-
-  flex-direction: column;
-
-  gap: 8px;
-}
-
-
-.map-control-button {
-  width: 44px;
-  height: 44px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  border: none;
-
-  border-radius: 10px;
-
-  background: #ffffff;
-
-  color: #000000;
-
-  cursor: pointer;
-
-  box-shadow:
-    0 3px 15px rgba(0, 0, 0, 0.15);
-
-  transition: all 0.2s ease;
-}
-
-
-.map-control-button:hover {
-  color: #0f766e;
-
-  transform: translateY(-1px);
-}
-
-
-.map-control-button:disabled {
-  opacity: 0.45;
-
-  cursor: not-allowed;
-}
-
-
-.map-control-button.control-active {
-  background: #0f766e;
-
-  color: #ffffff;
-}
-
-
-/* =====================================================
-   SETTINGS PANEL
-===================================================== */
-
-.map-settings-panel {
-  position: absolute;
-
-  top: 95px;
-  right: 75px;
-
-  z-index: 30;
-
-  width: 300px;
-
-  background: #ffffff;
-
-  border-radius: 14px;
-
-  box-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.18);
-
-  overflow: hidden;
-}
-
-
-.settings-header {
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  padding: 17px;
-
-  border-bottom: 1px solid #eeeeee;
-}
-
-
-.settings-header h3 {
-  margin: 0;
-
-  color: #000000;
-
-  font-size: 16px;
-}
-
-
-.settings-header span {
-  display: block;
-
-  margin-top: 3px;
-
-  color: #777777;
-
-  font-size: 11px;
-}
-
-
-.settings-close {
-  width: 34px;
-  height: 34px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  border: none;
-
-  border-radius: 8px;
-
-  background: #f5f5f5;
-
-  color: #000000;
-
-  cursor: pointer;
-}
-
-
-.settings-close:hover {
-  background: #eeeeee;
-}
-
-
-/* =====================================================
-   SETTINGS SECTION
-===================================================== */
-
-.settings-section {
-  padding: 16px;
-
-  border-bottom: 1px solid #eeeeee;
-}
-
-
-.settings-section h4 {
-  margin: 0 0 12px;
-
-  color: #000000;
-
-  font-size: 12px;
-
-  text-transform: uppercase;
-
-  letter-spacing: 0.5px;
-}
-
-
-/* =====================================================
-   MAP TYPE
-===================================================== */
-
-.map-type-options {
-  display: grid;
-
-  grid-template-columns:
-    repeat(3, 1fr);
-
-  gap: 7px;
-}
-
-
-.map-type-options button {
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  gap: 5px;
-
-  padding: 10px 5px;
-
-  border: 1px solid #dddddd;
-
-  border-radius: 8px;
-
-  background: #ffffff;
-
-  color: #555555;
-
-  cursor: pointer;
-
-  font-size: 10px;
-}
-
-
-.map-type-options button svg {
-  font-size: 19px;
-}
-
-
-.map-type-options button:hover {
-  border-color: #0f766e;
-
-  color: #0f766e;
-}
-
-
-.map-type-options button.map-type-active {
-  border-color: #0f766e;
-
-  background: rgba(15, 118, 110, 0.08);
-
-  color: #0f766e;
-}
-
-
-/* =====================================================
-   SETTING TOGGLE
-===================================================== */
-
-.setting-toggle {
-  display: flex;
-
-  align-items: center;
-
-  justify-content: space-between;
-
-  padding: 10px 0;
-
-  cursor: pointer;
-}
-
-
-.setting-toggle > div {
-  display: flex;
-
-  align-items: center;
-
-  gap: 8px;
-}
-
-
-.setting-toggle svg {
-  color: #0f766e;
-
-  font-size: 19px;
-}
-
-
-.setting-toggle span {
-  color: #333333;
-
-  font-size: 12px;
-}
-
-
-/* =====================================================
-   CHECKBOX
-===================================================== */
-
-.setting-toggle input {
-  width: 18px;
-  height: 18px;
-
-  accent-color: #0f766e;
-
-  cursor: pointer;
-}
-
-
-/* =====================================================
-   MONITORING STATUS
-===================================================== */
-
-.settings-monitoring {
-  display: flex;
-
-  align-items: center;
-
-  gap: 10px;
-
-  margin: 15px;
-
-  padding: 12px;
-
-  border-radius: 9px;
-
-  background: #f7f7f7;
-}
-
-
-.monitoring-icon {
-  width: 34px;
-  height: 34px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  border-radius: 8px;
-
-  background: rgba(15, 118, 110, 0.1);
-
-  color: #0f766e;
-}
-
-
-.settings-monitoring strong {
-  display: block;
-
-  color: #000000;
-
-  font-size: 11px;
-}
-
-
-.settings-monitoring span {
-  display: block;
-
-  margin-top: 3px;
-
-  color: #777777;
-
-  font-size: 10px;
-}
-
-
-/* =====================================================
-   CURRENT LOCATION
-===================================================== */
-
-.current-location-marker {
-  width: 70px;
-  height: 70px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  pointer-events: none;
-}
-
-
-.location-accuracy-circle {
-  width: 64px;
-  height: 64px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  border-radius: 50%;
-
-  background:
-    rgba(15, 118, 110, 0.18);
-}
-
-
-.location-dot {
-  width: 18px;
-  height: 18px;
-
-  border: 3px solid #ffffff;
-
-  border-radius: 50%;
-
-  background: #0f766e;
-
-  box-shadow:
-    0 1px 5px rgba(0, 0, 0, 0.35);
-}
-
-
-/* =====================================================
-   LOCATION ERROR
-===================================================== */
-
-.location-error {
-  position: absolute;
-
-  left: 50%;
-  bottom: 95px;
-
-  z-index: 40;
-
-  transform: translateX(-50%);
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 9px;
-
-  max-width: 450px;
-
-  padding: 11px 13px;
-
-  background: #ffffff;
-
-  border-radius: 9px;
-
-  box-shadow:
-    0 5px 20px rgba(0, 0, 0, 0.18);
-
-  color: #000000;
-
-  font-size: 12px;
-}
-
-
-.location-error svg {
-  color: #0f766e;
-
-  font-size: 19px;
-}
-
-
-.location-error button {
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  margin-left: 5px;
-
-  padding: 3px;
-
-  border: none;
-
-  background: transparent;
-
-  color: #555555;
-
-  cursor: pointer;
-}
-
-
-/* =====================================================
-   SOS ALERT PANEL
-===================================================== */
-
-.sos-alert-panel {
-  position: absolute;
-
-  top: 95px;
-  left: 50%;
-
-  z-index: 50;
-
-  transform: translateX(-50%);
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 12px;
-
-  min-width: 330px;
-
-  padding: 13px 15px;
-
-  background: #ffffff;
-
-  border-left: 4px solid #0f766e;
-
-  border-radius: 10px;
-
-  box-shadow:
-    0 6px 25px rgba(0, 0, 0, 0.2);
-}
-
-
-.sos-alert-icon {
-  width: 38px;
-  height: 38px;
-
-  display: flex;
-
-  align-items: center;
-
-  justify-content: center;
-
-  border-radius: 8px;
-
-  background: #0f766e;
-
-  color: #ffffff;
-}
-
-
-.sos-alert-panel strong {
-  display: block;
-
-  color: #000000;
-
-  font-size: 12px;
-}
-
-
-.sos-alert-panel span {
-  display: block;
-
-  margin-top: 3px;
-
-  color: #666666;
-
-  font-size: 10px;
-}
-
-
-.sos-alert-panel button {
-  margin-left: auto;
-
-  padding: 7px 10px;
-
-  border: 1px solid #dddddd;
-
-  border-radius: 6px;
-
-  background: #ffffff;
-
-  color: #000000;
-
-  cursor: pointer;
-
-  font-size: 10px;
-}
-
-
-/* =====================================================
-   MAP ERROR
-===================================================== */
-
-.map-error {
-  width: 100%;
-  height: 100vh;
-
-  display: flex;
-
-  flex-direction: column;
-
-  align-items: center;
-
-  justify-content: center;
-
-  background: #ffffff;
-
-  color: #000000;
-
-  text-align: center;
-}
-
-
-.map-error h3 {
-  color: #0f766e;
-}
-
-
-/* =====================================================
-   RESPONSIVE
-===================================================== */
-
-@media (max-width: 768px) {
-
-  .map-top-bar {
-    top: 10px;
-    left: 10px;
-    right: 10px;
-  }
-
-
-  .tour-safe-title span {
-    display: none;
-  }
-
-
-  .tour-safe-title {
-    padding: 8px 11px;
-  }
-
-
-  .risk-card {
-    top: 75px;
-    left: 10px;
-
-    width: 180px;
-
-    padding: 12px;
-  }
-
-
-  .map-controls {
-    top: 75px;
-    right: 10px;
-  }
-
-
-  .map-settings-panel {
-    top: 130px;
-    right: 10px;
-    left: 10px;
-
-    width: auto;
-  }
-
-
-  .tour-control {
-    bottom: 20px;
-  }
-
-
-  .start-tour-button,
-  .stop-tour-button {
-    min-width: 165px;
-  }
-
-
-  .sos-button {
-    right: 10px;
-    bottom: 20px;
-
-    min-width: 120px;
-  }
-
-
-  .sos-button span {
-    font-size: 11px;
-  }
-
-
-  .location-error {
-    left: 10px;
-    right: 10px;
-
-    bottom: 85px;
-
-    transform: none;
-
-    max-width: none;
-  }
-
-}
-/* =====================================================
-   MOBILE RESPONSIVE - MAX 414px
-===================================================== */
-
-@media (max-width: 414px) {
-
-  /* ===================================================
-     TOP BAR
-  =================================================== */
-
-  .map-top-bar {
-    top: 8px;
-    left: 8px;
-    right: 8px;
-
-    gap: 8px;
-  }
-
-  .tour-safe-title {
-    padding: 7px 9px;
-
-    gap: 8px;
-
-    border-radius: 10px;
-  }
-
-  .tour-safe-logo {
-    width: 34px;
-    height: 34px;
-
-    border-radius: 8px;
-
-    font-size: 12px;
-  }
-
-  .tour-safe-title h2 {
-    font-size: 14px;
-  }
-
-  .tour-safe-title span {
-    display: none;
-  }
-
-  .tour-status {
-    padding: 8px 10px;
-
-    gap: 6px;
-
-    font-size: 10px;
-
-    border-radius: 20px;
-
-    white-space: nowrap;
-  }
-
-  .status-dot {
-    width: 7px;
-    height: 7px;
-  }
-
-
-  /* ===================================================
-     RISK CARD
-  =================================================== */
-
-  .risk-card {
-    top: 65px;
-    left: 8px;
-
-    width: 150px;
-
-    padding: 10px;
-
-    border-radius: 11px;
-  }
-
-  .risk-card-header {
-    gap: 8px;
-  }
-
-  .risk-icon {
-    width: 30px;
-    height: 30px;
-
-    border-radius: 7px;
-  }
-
-  .risk-icon svg {
-    font-size: 17px;
-  }
-
-  .risk-label {
-    font-size: 9px;
-  }
-
-  .risk-card h3 {
-    font-size: 20px;
-  }
-
-  .risk-progress {
-    height: 5px;
-
-    margin-top: 10px;
-  }
-
-  .risk-description {
-    margin-top: 6px;
-
-    font-size: 9px;
-  }
-
-
-  /* ===================================================
-     MAP CONTROLS
-  =================================================== */
-
-  .map-controls {
-    top: 65px;
-    right: 8px;
-
-    gap: 6px;
-  }
-
-  .map-control-button {
-    width: 38px;
-    height: 38px;
-
-    border-radius: 8px;
-  }
-
-  .map-control-button svg {
-    font-size: 19px;
-  }
-
-
-  /* ===================================================
-     SETTINGS PANEL
-  =================================================== */
-
-  .map-settings-panel {
-    top: 115px;
-
-    left: 8px;
-    right: 8px;
-
-    width: auto;
-
-    max-height: calc(100vh - 130px);
-
-    overflow-y: auto;
-
-    border-radius: 12px;
-  }
-
-  .settings-header {
-    padding: 13px;
-  }
-
-  .settings-header h3 {
-    font-size: 14px;
-  }
-
-  .settings-header span {
-    font-size: 9px;
-  }
-
-  .settings-close {
-    width: 30px;
-    height: 30px;
-  }
-
-  .settings-section {
-    padding: 12px;
-  }
-
-  .settings-section h4 {
-    margin-bottom: 9px;
-
-    font-size: 10px;
-  }
-
-
-  /* ===================================================
-     MAP TYPE OPTIONS
-  =================================================== */
-
-  .map-type-options {
-    gap: 5px;
-  }
-
-  .map-type-options button {
-    padding: 8px 3px;
-
-    border-radius: 7px;
-
-    font-size: 9px;
-  }
-
-  .map-type-options button svg {
-    font-size: 17px;
-  }
-
-
-  /* ===================================================
-     SETTING TOGGLE
-  =================================================== */
-
-  .setting-toggle {
-    padding: 8px 0;
-  }
-
-  .setting-toggle > div {
-    gap: 6px;
-  }
-
-  .setting-toggle svg {
-    font-size: 17px;
-  }
-
-  .setting-toggle span {
-    font-size: 10px;
-  }
-
-  .setting-toggle input {
-    width: 16px;
-    height: 16px;
-  }
-
-
-  /* ===================================================
-     MONITORING STATUS
-  =================================================== */
-
-  .settings-monitoring {
-    margin: 10px;
-
-    padding: 9px;
-
-    gap: 8px;
-
-    border-radius: 8px;
-  }
-
-  .monitoring-icon {
-    width: 30px;
-    height: 30px;
-
-    border-radius: 7px;
-  }
-
-  .settings-monitoring strong {
-    font-size: 10px;
-  }
-
-  .settings-monitoring span {
-    font-size: 9px;
-  }
-
-
-  /* ===================================================
-     START / STOP TOUR
-  =================================================== */
-
-  .tour-control {
-    left: 50%;
-
-    bottom: 15px;
-
-    width: auto;
-  }
-
-  .start-tour-button,
-  .stop-tour-button {
-    min-width: 150px;
-
-    width: 150px;
-
-    height: 46px;
-
-    padding: 0 15px;
-
-    gap: 7px;
-
-    border-radius: 24px;
-
-    font-size: 13px;
-  }
-
-  .start-tour-button svg,
-  .stop-tour-button svg {
-    font-size: 19px;
-  }
-
-
-  /* ===================================================
-     SOS BUTTON
-  =================================================== */
-
-  .sos-button {
-    right: 8px;
-    bottom: 15px;
-
-    min-width: 0;
-
-    width: 48px;
-    height: 46px;
-
-    padding: 0;
-
-    gap: 0;
-
-    border-radius: 50%;
-  }
-
-  .sos-button svg {
-    font-size: 20px;
-  }
-
-  .sos-button span {
-    display: none;
-  }
-
-
-  /* ===================================================
-     LOCATION ERROR
-  =================================================== */
-
-  .location-error {
-    left: 8px;
-    right: 8px;
-
-    bottom: 72px;
-
-    width: auto;
-
-    max-width: none;
-
-    padding: 9px 10px;
-
-    gap: 7px;
-
-    border-radius: 8px;
-
-    font-size: 10px;
-  }
-
-  .location-error svg {
-    font-size: 17px;
-  }
-
-
-  /* ===================================================
-     SOS ALERT PANEL
-  =================================================== */
-
-  .sos-alert-panel {
-    top: 65px;
-
-    left: 8px;
-    right: 8px;
-
-    width: auto;
-    min-width: 0;
-
-    transform: none;
-
-    gap: 8px;
-
-    padding: 10px;
-
-    border-left-width: 3px;
-
-    border-radius: 9px;
-  }
-
-  .sos-alert-icon {
-    width: 32px;
-    height: 32px;
-
-    flex-shrink: 0;
-
-    border-radius: 7px;
-  }
-
-  .sos-alert-icon svg {
-    font-size: 18px;
-  }
-
-  .sos-alert-panel strong {
-    font-size: 10px;
-  }
-
-  .sos-alert-panel span {
-    font-size: 8px;
-  }
-
-  .sos-alert-panel button {
-    padding: 5px 7px;
-
-    font-size: 8px;
-
-    flex-shrink: 0;
-  }
-
-
-  /* ===================================================
-     CURRENT LOCATION
-  =================================================== */
-
-  .current-location-marker {
-    width: 60px;
-    height: 60px;
-  }
-
-  .location-accuracy-circle {
-    width: 54px;
-    height: 54px;
-  }
-
-  .location-dot {
-    width: 16px;
-    height: 16px;
-
-    border-width: 2px;
-  }
-
-
-  /* ===================================================
-     MAP ERROR
-  =================================================== */
-
-  .map-error {
-    padding: 20px;
-
-    box-sizing: border-box;
-  }
-
-  .map-error h3 {
-    font-size: 18px;
-  }
-
-  .map-error p {
-    font-size: 12px;
-  }
-  .gmnoprint{
-    display: none;
-  }
-  .tour-safe-title{
-    display: none;
-  }
-}
-
-
 /* contact============================================================================================== */
 
 /* ======================================================
@@ -3288,3 +1707,1457 @@
   }
 }
 
+
+
+/* ==================================================================================================== */
+/* Map============================================================================================== */
+
+
+
+/* ============================================================
+   TOURSAFE - MAP PAGE
+   Smart Tourist Safety Monitoring System
+
+   Main colors:
+   #0f766e = Teal
+   #ffffff = White
+   #000000 = Black
+   ============================================================ */
+
+
+/* ============================================================
+   GLOBAL MAP PAGE
+   ============================================================ */
+
+.toursafe-map-page {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* ============================================================
+   MAP CONTAINER
+   IMPORTANT:
+   MapLibre needs an element with a real height.
+   ============================================================ */
+
+.toursafe-map {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+
+  background: #ffffff;
+  z-index: 1;
+}
+
+
+/* Make MapLibre canvas fill the container */
+
+.toursafe-map .maplibregl-map {
+  width: 100%;
+  height: 100%;
+}
+
+.toursafe-map .maplibregl-canvas-container {
+  width: 100%;
+  height: 100%;
+}
+
+.toursafe-map canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+
+/* ============================================================
+   MAPLIBRE CONTROLS
+   ============================================================ */
+
+.toursafe-map .maplibregl-ctrl-group {
+  overflow: hidden;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.toursafe-map .maplibregl-ctrl-group button {
+  width: 38px;
+  height: 38px;
+
+  background-color: #ffffff;
+
+  border: 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+  cursor: pointer;
+}
+
+.toursafe-map .maplibregl-ctrl-group button:last-child {
+  border-bottom: none;
+}
+
+.toursafe-map .maplibregl-ctrl-group button:hover {
+  background-color: #f0fdfa;
+}
+
+.toursafe-map .maplibregl-ctrl-group button:focus {
+  outline: 2px solid #0f766e;
+  outline-offset: -2px;
+}
+
+
+/* Navigation control */
+
+.toursafe-map .maplibregl-ctrl-top-right {
+  top: 150px;
+  right: 18px;
+}
+
+
+/* Scale */
+
+.toursafe-map .maplibregl-ctrl-bottom-left {
+  bottom: 90px;
+  left: 15px;
+}
+
+.toursafe-map .maplibregl-ctrl-scale {
+  border: 2px solid #000000;
+  border-top: none;
+
+  background: rgba(255, 255, 255, 0.9);
+
+  color: #000000;
+
+  font-size: 11px;
+}
+
+
+/* Attribution */
+
+.toursafe-map .maplibregl-ctrl-attrib {
+  font-size: 10px;
+}
+
+
+/* ============================================================
+   SEARCH AREA
+   ============================================================ */
+
+.toursafe-search-wrapper {
+  position: absolute;
+
+  top: 20px;
+  left: 20px;
+
+  width: min(420px, calc(100% - 40px));
+
+  z-index: 20;
+}
+
+
+.toursafe-search-box {
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+  min-height: 50px;
+
+  padding: 0 15px;
+
+  background: #ffffff;
+
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 12px;
+
+  box-shadow:
+    0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+
+.toursafe-search-box input {
+  flex: 1;
+
+  width: 100%;
+
+  padding: 13px 8px;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: #000000;
+
+  font-size: 15px;
+}
+
+
+.toursafe-search-box input::placeholder {
+  color: #777777;
+}
+
+
+.toursafe-search-box button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 56px;
+  height: 48px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #0f766e;
+  color: #ffffff;
+
+  cursor: pointer;
+}
+
+
+.toursafe-search-box button:hover {
+  background: #095f59;
+}
+
+
+/* ============================================================
+   SEARCH RESULTS
+   ============================================================ */
+
+.toursafe-search-results {
+  width: 100%;
+
+  margin-top: 8px;
+
+  background: #ffffff;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.16);
+}
+
+
+.toursafe-search-result {
+  display: flex;
+  align-items: center;
+
+  width: 100%;
+
+  padding: 12px 14px;
+
+  background: #ffffff;
+
+  border: none;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+  text-align: left;
+
+  color: #000000;
+
+  cursor: pointer;
+}
+
+
+.toursafe-search-result:last-child {
+  border-bottom: none;
+}
+
+
+.toursafe-search-result:hover {
+  background: #f0fdfa;
+}
+
+
+.toursafe-search-result strong {
+  display: block;
+
+  color: #000000;
+
+  font-size: 14px;
+}
+
+
+.toursafe-search-result span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #666666;
+
+  font-size: 12px;
+}
+
+
+/* ============================================================
+   STATUS CARD
+   ============================================================ */
+
+.toursafe-status-card {
+  position: absolute;
+
+  top: 85px;
+  left: 20px;
+
+  width: 240px;
+
+  padding: 15px;
+
+  background: #ffffff;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+
+  box-shadow:
+    0 5px 18px rgba(0, 0, 0, 0.14);
+
+  z-index: 15;
+}
+
+
+.toursafe-status-card h3 {
+  margin: 0 0 8px;
+
+  color: #000000;
+
+  font-size: 15px;
+}
+
+
+.toursafe-status-card p {
+  margin: 4px 0;
+
+  color: #444444;
+
+  font-size: 13px;
+}
+
+
+/* ============================================================
+   RISK DISPLAY
+   ============================================================ */
+
+.toursafe-risk {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-top: 10px;
+  padding: 10px 12px;
+
+  border-radius: 9px;
+
+  background: #f0fdfa;
+
+  border-left: 4px solid #0f766e;
+}
+
+
+.toursafe-risk strong {
+  color: #000000;
+}
+
+
+.toursafe-risk span {
+  color: #0f766e;
+
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   DESTINATION CARD
+   ============================================================ */
+
+.toursafe-destination-card {
+  position: absolute;
+
+  top: 20px;
+  right: 75px;
+
+  width: 260px;
+
+  padding: 14px 16px;
+
+  background: #ffffff;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+
+  box-shadow:
+    0 5px 18px rgba(0, 0, 0, 0.14);
+
+  z-index: 15;
+}
+
+
+.toursafe-destination-card h3 {
+  margin: 0 0 5px;
+
+  color: #000000;
+
+  font-size: 15px;
+}
+
+
+.toursafe-destination-card p {
+  margin: 0;
+
+  color: #555555;
+
+  font-size: 12px;
+
+  line-height: 1.4;
+}
+
+
+/* ============================================================
+   ROUTE SUMMARY
+   ============================================================ */
+
+.toursafe-route-summary {
+  position: absolute;
+
+  left: 0px;
+  bottom: -88px;
+
+  display: flex;
+  align-items: center;
+  gap: 18px;
+
+  padding: 12px 16px;
+
+  background: #ffffff;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+
+  box-shadow:
+    0 5px 18px rgba(0, 0, 0, 0.14);
+
+  z-index: 15;
+}
+
+
+.toursafe-route-summary strong {
+  display: block;
+
+  color: #000000;
+
+  font-size: 15px;
+}
+
+
+.toursafe-route-summary span {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #555555;
+
+  font-size: 12px;
+}
+
+
+/* ============================================================
+   ROUTE LOADING
+   ============================================================ */
+
+.toursafe-route-loading {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  transform: translate(-50%, -50%);
+
+  padding: 12px 18px;
+
+  background: #ffffff;
+
+  border-radius: 10px;
+
+  color: #000000;
+
+  font-size: 14px;
+
+  box-shadow:
+    0 5px 20px rgba(0, 0, 0, 0.18);
+
+  z-index: 30;
+}
+
+
+/* ============================================================
+   ROUTE ERROR
+   ============================================================ */
+
+.toursafe-route-error {
+  position: absolute;
+
+  left: 50%;
+  bottom: 120px;
+
+  transform: translateX(-50%);
+
+  max-width: 420px;
+
+  padding: 12px 16px;
+
+  background: #ffffff;
+
+  border: 1px solid #000000;
+  border-radius: 9px;
+
+  color: #000000;
+
+  font-size: 13px;
+
+  box-shadow:
+    0 5px 18px rgba(0, 0, 0, 0.15);
+
+  z-index: 20;
+}
+
+
+/* ============================================================
+   GENERAL MESSAGE
+   ============================================================ */
+
+.toursafe-message {
+  position: absolute;
+
+  left: 50%;
+  top: 20px;
+
+  transform: translateX(-50%);
+
+  max-width: 450px;
+
+  padding: 10px 16px;
+
+  background: #ffffff;
+
+  border: 1px solid #0f766e;
+  border-radius: 9px;
+
+  color: #000000;
+
+  font-size: 13px;
+
+  box-shadow:
+    0 5px 18px rgba(0, 0, 0, 0.14);
+
+  z-index: 50;
+}
+
+
+/* ============================================================
+   MAP TOOLS
+   ============================================================ */
+
+.toursafe-map-tools {
+  position: absolute;
+
+  right: 9px;
+  bottom: 178px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  z-index: 20;
+}
+
+
+.toursafe-map-tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 44px;
+  height: 44px;
+
+  padding: 0;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #000000;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.14);
+}
+
+
+.toursafe-map-tool:hover {
+  background: #f0fdfa;
+
+  color: #0f766e;
+}
+
+
+.toursafe-map-tool.active {
+  background: #0f766e;
+
+  color: #ffffff;
+}
+
+
+/* ============================================================
+   MAP STYLE MENU
+   ============================================================ */
+
+.toursafe-style-menu {
+  position: absolute;
+
+  right: 72px;
+  bottom: 170px;
+
+  width: 180px;
+
+  padding: 8px;
+
+  background: #ffffff;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+
+  box-shadow:
+    0 5px 20px rgba(0, 0, 0, 0.16);
+
+  z-index: 25;
+}
+
+
+.toursafe-style-menu button {
+  display: block;
+
+  width: 100%;
+
+  padding: 10px 12px;
+
+  border: none;
+  border-radius: 7px;
+
+  background: #ffffff;
+
+  color: #000000;
+
+  text-align: left;
+
+  cursor: pointer;
+}
+
+
+.toursafe-style-menu button:hover {
+  background: #f0fdfa;
+
+  color: #0f766e;
+}
+
+
+.toursafe-style-menu button.active {
+  background: #0f766e;
+
+  color: #ffffff;
+}
+
+
+/* ============================================================
+   BOTTOM PANEL
+   ============================================================ */
+
+.toursafe-bottom-panel {
+  position: absolute;
+
+  left: 50%;
+  bottom: 20px;
+
+  transform: translateX(-50%);
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  width: max-content;
+  max-width: calc(100% - 40px);
+
+  padding: 10px;
+
+  background: #ffffff;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 14px;
+
+  box-shadow:
+    0 7px 25px rgba(0, 0, 0, 0.18);
+
+  z-index: 25;
+}
+
+
+/* ============================================================
+   START TOUR BUTTON
+   ============================================================ */
+
+.toursafe-start-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-width: 145px;
+
+  padding: 12px 18px;
+
+  border: none;
+  border-radius: 9px;
+
+  background: #0f766e;
+
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+
+.toursafe-start-button:hover {
+  background: #095f59;
+
+  transform: translateY(-1px);
+}
+
+
+.toursafe-start-button:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+/* ============================================================
+   STOP TOUR BUTTON
+   ============================================================ */
+
+.toursafe-stop-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-width: 145px;
+
+  padding: 12px 18px;
+
+  border: 1px solid #000000;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #000000;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.toursafe-stop-button:hover {
+  background: #000000;
+
+  color: #ffffff;
+}
+
+
+/* ============================================================
+   SOS BUTTON
+   ============================================================ */
+
+.toursafe-sos-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  min-width: 120px;
+
+  padding: 12px 18px;
+
+  border: 2px solid #000000;
+  border-radius: 9px;
+
+  background: #ffffff;
+
+  color: #000000;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  cursor: pointer;
+}
+
+
+.toursafe-sos-button:hover {
+  background: #000000;
+
+  color: #ffffff;
+}
+
+
+.toursafe-sos-button:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+}
+
+
+/* ============================================================
+   LOCATION LABEL
+   ============================================================ */
+
+.toursafe-location-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 7px 10px;
+
+  background: #ffffff;
+
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+
+  color: #000000;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.14);
+}
+
+
+.toursafe-location-label-dot {
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: #0f766e;
+}
+
+
+/* ============================================================
+   CURRENT LOCATION MARKER
+   ============================================================ */
+
+.toursafe-current-marker {
+  position: relative;
+
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+/* Accuracy ring */
+
+.toursafe-current-marker-ring {
+  position: absolute;
+
+  width: 42px;
+  height: 42px;
+
+  border-radius: 50%;
+
+  background: rgba(15, 118, 110, 0.14);
+
+  border: 2px solid rgba(15, 118, 110, 0.35);
+}
+
+
+/* Pulse */
+
+.toursafe-current-marker-pulse {
+  position: absolute;
+
+  width: 28px;
+  height: 28px;
+
+  border-radius: 50%;
+
+  background: rgba(15, 118, 110, 0.18);
+}
+
+
+/* Actual location dot */
+
+.toursafe-current-marker-dot {
+  position: relative;
+
+  width: 14px;
+  height: 14px;
+
+  border-radius: 50%;
+
+  background: #0f766e;
+
+  border: 3px solid #ffffff;
+
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.35);
+
+  z-index: 2;
+}
+
+
+/* ============================================================
+   DESTINATION MARKER
+   ============================================================ */
+
+.toursafe-destination-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 38px;
+  height: 38px;
+}
+
+
+.toursafe-destination-pin {
+  position: relative;
+
+  width: 30px;
+  height: 30px;
+
+  border-radius: 50% 50% 50% 0;
+
+  background: #000000;
+
+  transform: rotate(-45deg);
+
+  box-shadow:
+    0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+
+.toursafe-destination-dot {
+  position: absolute;
+
+  width: 10px;
+  height: 10px;
+
+  top: 10px;
+  left: 10px;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+}
+
+
+/* ============================================================
+   3D MAP SUPPORT
+   ============================================================ */
+
+/*
+   These classes are useful if your Map.jsx adds a 3D mode
+   button or 3D map state.
+
+   CSS does NOT create 3D terrain/buildings.
+   MapLibre's JavaScript API must enable:
+   - terrain
+   - pitch
+   - bearing
+   - fill-extrusion
+*/
+
+
+.toursafe-map.is-3d {
+  perspective: 1000px;
+}
+
+
+.toursafe-map.is-3d .maplibregl-canvas {
+  transform-origin: center center;
+}
+
+
+/* 3D control */
+
+.toursafe-3d-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 44px;
+  height: 44px;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+
+  background: #ffffff;
+
+  color: #000000;
+
+  cursor: pointer;
+
+  box-shadow:
+    0 4px 14px rgba(0, 0, 0, 0.14);
+}
+
+
+.toursafe-3d-button:hover {
+  background: #f0fdfa;
+
+  color: #0f766e;
+}
+
+
+.toursafe-3d-button.active {
+  background: #0f766e;
+
+  color: #ffffff;
+}
+
+
+/* ============================================================
+   RESPONSIVE - TABLET
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+  .toursafe-search-wrapper {
+    top: 12px;
+    left: 12px;
+
+    width: calc(100% - 24px);
+  }
+
+
+  .toursafe-status-card {
+    top: 76px;
+    left: 12px;
+
+    width: 210px;
+
+    padding: 12px;
+  }
+
+
+  .toursafe-destination-card {
+    top: 76px;
+    right: 12px;
+
+    width: 220px;
+  }
+
+
+  .toursafe-map .maplibregl-ctrl-top-right {
+    top: 145px;
+    right: 12px;
+  }
+
+
+  .toursafe-map-tools {
+    right: 12px;
+    bottom: 150px;
+  }
+
+
+  .toursafe-style-menu {
+    right: 65px;
+    bottom: 150px;
+  }
+
+
+  .toursafe-route-summary {
+    left: 12px;
+    bottom: 110px;
+  }
+
+
+  .toursafe-bottom-panel {
+    bottom: 12px;
+
+    max-width: calc(100% - 24px);
+
+    padding: 8px;
+  }
+}
+
+
+/* ============================================================
+   RESPONSIVE - MOBILE
+   ============================================================ */
+
+@media (max-width: 520px) {
+
+  .toursafe-map-page {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+
+
+  .toursafe-map {
+    height: 100dvh;
+    min-height: 100dvh;
+  }
+
+
+  /* Search */
+
+  .toursafe-search-wrapper {
+    top: 10px;
+    left: 10px;
+
+    width: calc(100% - 20px);
+  }
+
+
+  .toursafe-search-box {
+    min-height: 46px;
+
+    padding: 0 10px;
+
+    border-radius: 10px;
+  }
+
+
+  .toursafe-search-box input {
+    padding: 11px 7px;
+
+    font-size: 14px;
+  }
+
+
+  /* Status */
+
+  .toursafe-status-card {
+    top: 68px;
+    left: 10px;
+
+    width: calc(100% - 20px);
+
+    padding: 10px;
+
+    border-radius: 10px;
+  }
+
+
+  .toursafe-status-card h3 {
+    font-size: 14px;
+  }
+
+
+  .toursafe-status-card p {
+    font-size: 12px;
+  }
+
+
+  /* Destination */
+
+  .toursafe-destination-card {
+    top: auto;
+    left: 10px;
+    right: 10px;
+    bottom: 125px;
+
+    width: auto;
+
+    padding: 10px;
+  }
+
+
+  /* Map controls */
+
+  .toursafe-map .maplibregl-ctrl-top-right {
+    top: 155px;
+    right: 10px;
+  }
+
+
+  .toursafe-map .maplibregl-ctrl-group button {
+    width: 36px;
+    height: 36px;
+  }
+
+
+  /* Map tools */
+
+  .toursafe-map-tools {
+    right: 10px;
+    bottom: 205px;
+
+    gap: 6px;
+  }
+
+
+  .toursafe-map-tool {
+    width: 40px;
+    height: 40px;
+
+    border-radius: 9px;
+  }
+
+
+  /* Style menu */
+
+  .toursafe-style-menu {
+    right: 58px;
+    bottom: 205px;
+
+    width: 155px;
+  }
+
+
+  /* Route summary */
+
+  .toursafe-route-summary {
+    left: 10px;
+    right: 10px;
+    bottom: 125px;
+
+    width: auto;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding: 10px 12px;
+  }
+
+
+  /* Route error */
+
+  .toursafe-route-error {
+    left: 10px;
+    right: 10px;
+    bottom: 125px;
+
+    transform: none;
+
+    max-width: none;
+
+    text-align: center;
+  }
+
+
+  /* Bottom panel */
+
+  .toursafe-bottom-panel {
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+
+    transform: none;
+
+    width: auto;
+    max-width: none;
+
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 7px;
+
+    padding: 8px;
+
+    border-radius: 12px;
+  }
+
+
+  .toursafe-start-button,
+  .toursafe-stop-button {
+    width: 100%;
+    min-width: 0;
+
+    padding: 11px 8px;
+
+    font-size: 12px;
+  }
+
+
+  .toursafe-sos-button {
+    grid-column: 1 / -1;
+
+    width: 100%;
+    min-width: 0;
+
+    padding: 11px 8px;
+
+    font-size: 12px;
+  }
+
+
+  /* Message */
+
+  .toursafe-message {
+    top: 65px;
+
+    left: 10px;
+    right: 10px;
+
+    transform: none;
+
+    max-width: none;
+
+    text-align: center;
+  }
+
+
+  /* Scale */
+
+  .toursafe-map .maplibregl-ctrl-bottom-left {
+    bottom: 100px;
+    left: 10px;
+  }
+
+
+  /* Attribution */
+
+  .toursafe-map .maplibregl-ctrl-bottom-right {
+    right: 5px;
+    bottom: 5px;
+
+    max-width: 65%;
+  }
+}
+
+
+/* ============================================================
+   VERY SMALL MOBILE
+   ============================================================ */
+
+@media (max-width: 380px) {
+
+  .toursafe-status-card {
+    padding: 8px;
+  }
+
+
+  .toursafe-status-card p {
+    font-size: 11px;
+  }
+
+
+  .toursafe-destination-card {
+    bottom: 120px;
+  }
+
+
+  .toursafe-bottom-panel {
+    grid-template-columns: 1fr;
+  }
+
+
+  .toursafe-sos-button {
+    grid-column: auto;
+  }
+
+
+  .toursafe-map-tools {
+    bottom: 270px;
+  }
+
+
+  .toursafe-style-menu {
+    bottom: 270px;
+  }
+}
+
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
+.toursafe-map button:focus-visible,
+.toursafe-map input:focus-visible {
+  outline: 2px solid #0f766e;
+  outline-offset: 2px;
+}
+
+
+/* ============================================================
+   DISABLED ELEMENTS
+   ============================================================ */
+
+.toursafe-map button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.55;
+}
+
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+
+.toursafe-search-results::-webkit-scrollbar {
+  width: 6px;
+}
+
+
+.toursafe-search-results::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+
+
+.toursafe-search-results::-webkit-scrollbar-thumb {
+  background: #0f766e;
+
+  border-radius: 10px;
+}
+
+
+/* ============================================================
+   REMOVE OLD GOOGLE MAP STYLING
+   ============================================================ */
+
+/*
+   Do NOT use .gm-style here.
+   This project now uses MapLibre instead of Google Maps.
+*/
+
+
+/* ============================================================
+   END TOURSAFE MAP CSS
+   ============================================================ */
