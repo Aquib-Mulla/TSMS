@@ -2,13 +2,16 @@ const express = require("express");
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
+const path = require("path");
+
 require("dotenv").config();
 
-const path = require("path");
 const pool = require("./config/database");
+
 const adminRoutes = require("./routes/admin.routes");
 const authRoutes = require("./routes/auth.routes");
 const locationRoutes = require("./routes/location.routes");
+const sosRoutes = require("./routes/sos.routes");
 
 const app = express();
 
@@ -17,9 +20,11 @@ const app = express();
 // MIDDLEWARE
 // ==========================================
 
-app.use(cors({
-    origin: "*"
-}));
+app.use(
+    cors({
+        origin: "*"
+    })
+);
 
 app.use(express.json());
 
@@ -36,12 +41,10 @@ const server = http.createServer(app);
 // ==========================================
 
 const io = new Server(server, {
-
     cors: {
         origin: "*",
-        methods: ["GET", "POST"]
+        methods: ["GET", "POST", "PATCH"]
     }
-
 });
 
 
@@ -68,7 +71,6 @@ io.on("connection", (socket) => {
             data
         );
 
-
         if (!data || !data.userId) {
 
             console.log(
@@ -76,16 +78,11 @@ io.on("connection", (socket) => {
             );
 
             return;
-
         }
-
-
-        // Put tourist into their own room
 
         socket.join(
             `tourist_${data.userId}`
         );
-
 
         console.log(
             `Tourist ${data.userId} joined tracking room`
@@ -105,7 +102,6 @@ io.on("connection", (socket) => {
             data
         );
 
-
         if (
             !data ||
             !data.userId ||
@@ -118,9 +114,7 @@ io.on("connection", (socket) => {
             );
 
             return;
-
         }
-
 
         // Send live location to admin dashboard
 
@@ -143,23 +137,14 @@ io.on("connection", (socket) => {
             data
         );
 
-
         if (!data || !data.userId) {
-
             return;
-
         }
-
-
-        // Tell admin dashboard
 
         io.emit(
             "tourist:stop",
             data
         );
-
-
-        // Remove tourist from room
 
         socket.leave(
             `tourist_${data.userId}`
@@ -188,19 +173,62 @@ io.on("connection", (socket) => {
 // API ROUTES
 // ==========================================
 
+
+// ------------------------------------------
+// AUTH
+// ------------------------------------------
+
 app.use(
     "/api/auth",
     authRoutes
 );
+
+
+// ------------------------------------------
+// ADMIN
+// ------------------------------------------
 
 app.use(
     "/api/admin",
     adminRoutes
 );
 
+
+// ------------------------------------------
+// LOCATION
+// ------------------------------------------
+
 app.use(
     "/api/location",
     locationRoutes
+);
+
+
+// ------------------------------------------
+// SOS
+// IMPORTANT: io is already created here
+// ------------------------------------------
+
+app.use(
+    "/api/sos",
+    sosRoutes(io)
+);
+
+
+// ==========================================
+// SOS TEST ROUTE
+// ==========================================
+
+app.get(
+    "/api/sos/test",
+    (req, res) => {
+
+        res.json({
+            success: true,
+            message: "SOS API route is working."
+        });
+
+    }
 );
 
 
@@ -219,7 +247,6 @@ app.get(
                     "SELECT 1 AS result"
                 );
 
-
             res.json({
 
                 success: true,
@@ -237,7 +264,6 @@ app.get(
                 "Database error:",
                 error
             );
-
 
             res.status(500).json({
 
@@ -293,7 +319,6 @@ app.use(
 
         }
 
-
         res.sendFile(
             path.join(
                 frontendPath,
@@ -327,7 +352,6 @@ app.use(
 
         }
 
-
         res.status(404).send(
             "Page not found"
         );
@@ -350,6 +374,10 @@ server.listen(
 
         console.log(
             `Server running on http://localhost:${PORT}`
+        );
+
+        console.log(
+            "SOS API: /api/sos"
         );
 
     }

@@ -14,6 +14,24 @@ import Footer from "../components/Footer";
 
 const Home = () => {
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkLoginStatus = () => {
+      const user = localStorage.getItem("user");
+      const token = localStorage.getItem("token");
+
+      setIsLoggedIn(!!user && !!token);
+    };
+
+    checkLoginStatus();
+
+    window.addEventListener("storage", checkLoginStatus);
+
+    return () => {
+      window.removeEventListener("storage", checkLoginStatus);
+    };
+  }, []);
 
   return (
     <div className="tour-home">
@@ -45,14 +63,18 @@ const Home = () => {
           </p>
 
           <div className="hero-buttons">
-            <Link to="/register" className="primary-btn">
-              Start Your Journey
-              <ArrowRight size={18} />
-            </Link>
+
+            {!isLoggedIn && (
+              <Link to="/register" className="primary-btn">
+                Start Your Journey
+                <ArrowRight size={18} />
+              </Link>
+            )}
 
             <Link to="/map" className="secondary-btn">
               Explore Live Map
             </Link>
+
           </div>
 
         </div>
@@ -342,10 +364,12 @@ const Home = () => {
             safer way to explore.
           </p>
 
-          <Link to="/register" className="cta-button">
-            Start Tracking
-            <ArrowRight size={18} />
-          </Link>
+          {!isLoggedIn && (
+            <Link to="/register" className="cta-button">
+              Start Tracking
+              <ArrowRight size={18} />
+            </Link>
+          )}
 
         </div>
 

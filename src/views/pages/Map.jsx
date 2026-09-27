@@ -2070,94 +2070,109 @@ export default function Map() {
       );
     };
 
-  // ==========================================================
-  // SEND SOS
-  // ==========================================================
 
-  const sendSOS =
-    async () => {
-      if (sosLoading) {
-        return;
+// ============================================================
+// SEND SOS
+// ============================================================
+
+const sendSOS = async () => {
+  if (sosLoading) {
+    return;
+  }
+
+  try {
+    setSosLoading(true);
+    setMessage("");
+
+    const userId = getStoredUserId();
+    const location = userLocationRef.current;
+
+    // -----------------------------------------
+    // CHECK USER LOGIN
+    // -----------------------------------------
+    if (!userId) {
+      setMessage("Please login before sending SOS.");
+      return;
+    }
+
+    // -----------------------------------------
+    // CHECK LOCATION
+    // -----------------------------------------
+    if (!location) {
+      setMessage("Current location is not available.");
+      return;
+    }
+
+    console.log("========== SOS REQUEST ==========");
+    console.log("API URL:", API_URL);
+    console.log("User ID:", userId);
+    console.log("Latitude:", location.lat);
+    console.log("Longitude:", location.lng);
+    console.log("Risk:", risk);
+
+    // -----------------------------------------
+    // SEND SOS REQUEST
+    // -----------------------------------------
+    const response = await fetch(
+      `${API_URL}/api/sos`,
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          userId: userId,
+
+          latitude: location.lat,
+
+          longitude: location.lng,
+
+          risk: risk,
+
+          message: "Tourist SOS emergency alert",
+        }),
       }
+    );
 
-      try {
-        setSosLoading(true);
+    // -----------------------------------------
+    // GET BACKEND RESPONSE
+    // -----------------------------------------
+    const data = await response.json();
 
-        const userId =
-          getStoredUserId();
+    console.log("SOS HTTP STATUS:", response.status);
+    console.log("SOS BACKEND RESPONSE:", data);
 
-        const location =
-          userLocationRef.current;
+    // -----------------------------------------
+    // CHECK RESPONSE
+    // -----------------------------------------
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message ||
+          `SOS request failed with status ${response.status}`
+      );
+    }
 
-        if (!userId) {
-          setMessage(
-            "Please login before sending SOS."
-          );
+    // -----------------------------------------
+    // SUCCESS
+    // -----------------------------------------
+    setMessage(
+      data.message || "SOS alert sent successfully."
+    );
 
-          return;
-        }
+  } catch (error) {
+    console.error("SOS backend error:", error);
 
-        if (!location) {
-          setMessage(
-            "Current location is not available."
-          );
+    setMessage(
+      error.message || "Unable to send SOS alert."
+    );
 
-          return;
-        }
+  } finally {
+    setSosLoading(false);
+  }
+};
 
-        try {
-          const response =
-            await fetch(
-              `${API_URL}/api/sos`,
-              {
-                method: "POST",
-
-                headers: {
-                  "Content-Type":
-                    "application/json",
-                },
-
-                body:
-                  JSON.stringify({
-                    userId,
-
-                    latitude:
-                      location.lat,
-
-                    longitude:
-                      location.lng,
-
-                    risk,
-
-                    message:
-                      "Tourist SOS emergency alert",
-                  }),
-              }
-            );
-
-          if (!response.ok) {
-            throw new Error(
-              "SOS request failed"
-            );
-          }
-
-          setMessage(
-            "SOS alert sent."
-          );
-        } catch (error) {
-          console.error(
-            "SOS backend error:",
-            error
-          );
-
-          setMessage(
-            "Unable to send SOS alert."
-          );
-        }
-      } finally {
-        setSosLoading(false);
-      }
-    };
 
   // ==========================================================
   // CLEANUP
