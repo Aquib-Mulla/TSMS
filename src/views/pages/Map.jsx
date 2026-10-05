@@ -5,7 +5,6 @@ import React, {
   useState,
 } from "react";
 
-
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
@@ -37,9 +36,8 @@ import "../../style/style.css";
 // API CONFIGURATION
 // ============================================================
 
-const API_URL = 
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:5000";
+const API_URL =
+  import.meta.env.VITE_API_URL || "";
 
 // ============================================================
 // MAP CONFIGURATION
@@ -67,6 +65,19 @@ const DEFAULT_LOCATION = {
 };
 
 // ============================================================
+// CONVERT VALUE TO BOOLEAN
+// ============================================================
+
+function toBoolean(value) {
+  return (
+    value === true ||
+    value === 1 ||
+    value === "1" ||
+    value === "true"
+  );
+}
+
+// ============================================================
 // USER ID
 // ============================================================
 
@@ -79,16 +90,20 @@ function getStoredUserId() {
   ];
 
   for (const key of keys) {
-    const value = localStorage.getItem(key);
+    const value =
+      localStorage.getItem(key);
 
     if (!value) {
       continue;
     }
 
     try {
-      const parsed = JSON.parse(value);
+      const parsed =
+        JSON.parse(value);
 
-      if (typeof parsed === "string") {
+      if (
+        typeof parsed === "string"
+      ) {
         return parsed;
       }
 
@@ -128,7 +143,9 @@ function formatDistance(meters) {
     return `${Math.round(meters)} m`;
   }
 
-  return `${(meters / 1000).toFixed(2)} km`;
+  return `${(
+    meters / 1000
+  ).toFixed(2)} km`;
 }
 
 // ============================================================
@@ -144,7 +161,8 @@ function formatDuration(seconds) {
     return "--";
   }
 
-  const minutes = Math.round(seconds / 60);
+  const minutes =
+    Math.round(seconds / 60);
 
   if (minutes < 1) {
     return "Less than 1 min";
@@ -154,7 +172,8 @@ function formatDuration(seconds) {
     return `${minutes} min`;
   }
 
-  const hours = Math.floor(minutes / 60);
+  const hours =
+    Math.floor(minutes / 60);
 
   const remainingMinutes =
     minutes % 60;
@@ -199,10 +218,80 @@ function calculateRisk(accuracy) {
 }
 
 // ============================================================
+// CREATE GEO-FENCE CIRCLE
+// ============================================================
+
+function createGeofenceCircle(
+  latitude,
+  longitude,
+  radius
+) {
+  const earthRadius = 6371000;
+
+  const centerLat =
+    (latitude * Math.PI) / 180;
+
+  const centerLon =
+    (longitude * Math.PI) / 180;
+
+  const angularDistance =
+    radius / earthRadius;
+
+  const points = 128;
+
+  const coordinates = [];
+
+  for (
+    let i = 0;
+    i <= points;
+    i++
+  ) {
+    const bearing =
+      (i / points) * 2 * Math.PI;
+
+    const circleLat =
+      Math.asin(
+        Math.sin(centerLat) *
+          Math.cos(
+            angularDistance
+          ) +
+          Math.cos(centerLat) *
+            Math.sin(
+              angularDistance
+            ) *
+            Math.cos(bearing)
+      );
+
+    const circleLon =
+      centerLon +
+      Math.atan2(
+        Math.sin(bearing) *
+          Math.sin(
+            angularDistance
+          ) *
+          Math.cos(centerLat),
+        Math.cos(
+          angularDistance
+        ) -
+          Math.sin(centerLat) *
+            Math.sin(circleLat)
+      );
+
+    coordinates.push([
+      (circleLon * 180) / Math.PI,
+      (circleLat * 180) / Math.PI,
+    ]);
+  }
+
+  return coordinates;
+}
+
+// ============================================================
 // MAIN COMPONENT
 // ============================================================
 
 export default function Map() {
+
   // ==========================================================
   // MAP REFS
   // ==========================================================
@@ -257,6 +346,13 @@ export default function Map() {
 
   const followLocationRef =
     useRef(true);
+
+  // ==========================================================
+  // GEO-FENCE REF
+  // ==========================================================
+
+  const geofencesRef =
+    useRef([]);
 
   // ==========================================================
   // STATE
@@ -323,6 +419,28 @@ export default function Map() {
     useState("standard");
 
   // ==========================================================
+  // GEO-FENCE STATE
+  // ==========================================================
+
+  const [geofences, setGeofences] =
+    useState([]);
+
+  const [selectedGeofence, setSelectedGeofence] =
+    useState(null);
+
+  const [geofenceLoading, setGeofenceLoading] =
+    useState(false);
+
+  // ==========================================================
+  // KEEP GEO-FENCE REF UPDATED
+  // ==========================================================
+
+  useEffect(() => {
+    geofencesRef.current =
+      geofences;
+  }, [geofences]);
+
+  // ==========================================================
   // KEEP FOLLOW REF UPDATED
   // ==========================================================
 
@@ -376,29 +494,40 @@ export default function Map() {
   const calculateDistanceBetweenPoints =
     useCallback(
       (point1, point2) => {
-        const earthRadius = 6371000;
+        const earthRadius =
+          6371000;
 
         const lat1 =
-          (point1.lat * Math.PI) / 180;
+          (point1.lat * Math.PI) /
+          180;
 
         const lat2 =
-          (point2.lat * Math.PI) / 180;
+          (point2.lat * Math.PI) /
+          180;
 
         const deltaLat =
-          ((point2.lat - point1.lat) *
+          ((point2.lat -
+            point1.lat) *
             Math.PI) /
           180;
 
         const deltaLng =
-          ((point2.lng - point1.lng) *
+          ((point2.lng -
+            point1.lng) *
             Math.PI) /
           180;
 
         const a =
-          Math.sin(deltaLat / 2) ** 2 +
+          Math.sin(
+            deltaLat / 2
+          ) **
+            2 +
           Math.cos(lat1) *
             Math.cos(lat2) *
-            Math.sin(deltaLng / 2) ** 2;
+            Math.sin(
+              deltaLng / 2
+            ) **
+            2;
 
         const c =
           2 *
@@ -418,7 +547,10 @@ export default function Map() {
 
   const isLocationJumpReasonable =
     useCallback(
-      (location, currentAccuracy) => {
+      (
+        location,
+        currentAccuracy
+      ) => {
         const previous =
           lastAcceptedLocationRef.current;
 
@@ -432,7 +564,8 @@ export default function Map() {
             location
           );
 
-        const now = Date.now();
+        const now =
+          Date.now();
 
         const previousTime =
           lastLocationTimeRef.current ||
@@ -440,7 +573,8 @@ export default function Map() {
 
         const elapsedSeconds =
           Math.max(
-            (now - previousTime) / 1000,
+            (now - previousTime) /
+              1000,
             1
           );
 
@@ -471,7 +605,9 @@ export default function Map() {
 
         return true;
       },
-      [calculateDistanceBetweenPoints]
+      [
+        calculateDistanceBetweenPoints,
+      ]
     );
 
   // ==========================================================
@@ -495,7 +631,9 @@ export default function Map() {
         location.lat,
       ];
 
-      if (userMarkerRef.current) {
+      if (
+        userMarkerRef.current
+      ) {
         userMarkerRef.current.remove();
 
         userMarkerRef.current =
@@ -503,7 +641,9 @@ export default function Map() {
       }
 
       const element =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       element.className =
         "toursafe-current-marker";
@@ -573,17 +713,20 @@ export default function Map() {
           500
         );
 
-      const circlePoints = [];
+      const circlePoints =
+        [];
 
       const earthRadius =
         6371000;
 
       const lat =
-        (location.lat * Math.PI) /
+        (location.lat *
+          Math.PI) /
         180;
 
       const lng =
-        (location.lng * Math.PI) /
+        (location.lng *
+          Math.PI) /
         180;
 
       for (
@@ -699,10 +842,15 @@ export default function Map() {
         return;
       }
 
-      userMarkerRef.current.setLngLat([
-        userLocationRef.current.lng,
-        userLocationRef.current.lat,
-      ]);
+      userMarkerRef.current.setLngLat(
+        [
+          userLocationRef.current
+            .lng,
+
+          userLocationRef.current
+            .lat,
+        ]
+      );
     }, [createUserMarker]);
 
   // ==========================================================
@@ -728,7 +876,9 @@ export default function Map() {
       }
 
       const element =
-        document.createElement("div");
+        document.createElement(
+          "div"
+        );
 
       element.className =
         "toursafe-destination-marker";
@@ -805,6 +955,7 @@ export default function Map() {
 
           layout: {
             "line-cap": "round",
+
             "line-join": "round",
           },
 
@@ -812,8 +963,7 @@ export default function Map() {
             "line-color":
               "#ffffff",
 
-            "line-width":
-              9,
+            "line-width": 9,
 
             "line-opacity":
               0.95,
@@ -836,6 +986,7 @@ export default function Map() {
 
           layout: {
             "line-cap": "round",
+
             "line-join": "round",
           },
 
@@ -843,12 +994,498 @@ export default function Map() {
             "line-color":
               "#0f766e",
 
-            "line-width":
-              5,
+            "line-width": 5,
 
-            "line-opacity":
-              1,
+            "line-opacity": 1,
           },
+        });
+      }
+    }, []);
+
+  // ==========================================================
+  // DRAW GEO-FENCES
+  // ==========================================================
+
+  const drawGeofences =
+    useCallback(() => {
+      if (
+        !mapRef.current ||
+        !mapRef.current.isStyleLoaded()
+      ) {
+        return;
+      }
+
+      const map =
+        mapRef.current;
+
+      // ------------------------------------------------------
+      // CREATE POLYGON FEATURES
+      // ------------------------------------------------------
+
+      const polygonFeatures =
+        geofencesRef.current
+          .map((fence) => {
+            const latitude =
+              Number(
+                fence.latitude
+              );
+
+            const longitude =
+              Number(
+                fence.longitude
+              );
+
+            const radius =
+              Number(
+                fence.radius
+              );
+
+            if (
+              !Number.isFinite(
+                latitude
+              ) ||
+              !Number.isFinite(
+                longitude
+              ) ||
+              !Number.isFinite(
+                radius
+              ) ||
+              radius <= 0
+            ) {
+              return null;
+            }
+
+            return {
+              type: "Feature",
+
+              properties: {
+                id:
+                  fence.id,
+
+                name:
+                  fence.name || "",
+
+                description:
+                  fence.description ||
+                  "",
+
+                latitude,
+
+                longitude,
+
+                radius,
+
+                zoneType:
+                  fence.zoneType ||
+                  fence.zone_type ||
+                  "SAFE",
+
+                riskLevel:
+                  fence.riskLevel ||
+                  fence.risk_level ||
+                  "LOW",
+
+                status:
+                  fence.status ||
+                  "ACTIVE",
+              },
+
+              geometry: {
+                type: "Polygon",
+
+                coordinates: [
+                  createGeofenceCircle(
+                    latitude,
+                    longitude,
+                    radius
+                  ),
+                ],
+              },
+            };
+          })
+          .filter(Boolean);
+
+      // ------------------------------------------------------
+      // CENTER FEATURES
+      // ------------------------------------------------------
+
+      const centerFeatures =
+        geofencesRef.current
+          .map((fence) => {
+            const latitude =
+              Number(
+                fence.latitude
+              );
+
+            const longitude =
+              Number(
+                fence.longitude
+              );
+
+            if (
+              !Number.isFinite(
+                latitude
+              ) ||
+              !Number.isFinite(
+                longitude
+              )
+            ) {
+              return null;
+            }
+
+            return {
+              type: "Feature",
+
+              properties: {
+                id:
+                  fence.id,
+
+                name:
+                  fence.name || "",
+              },
+
+              geometry: {
+                type: "Point",
+
+                coordinates: [
+                  longitude,
+                  latitude,
+                ],
+              },
+            };
+          })
+          .filter(Boolean);
+
+      // ------------------------------------------------------
+      // GEOJSON
+      // ------------------------------------------------------
+
+      const polygonData = {
+        type: "FeatureCollection",
+
+        features:
+          polygonFeatures,
+      };
+
+      const centerData = {
+        type: "FeatureCollection",
+
+        features:
+          centerFeatures,
+      };
+
+      // ------------------------------------------------------
+      // REMOVE OLD LAYERS
+      // ------------------------------------------------------
+
+      if (
+        map.getLayer(
+          "geofence-center"
+        )
+      ) {
+        map.removeLayer(
+          "geofence-center"
+        );
+      }
+
+      if (
+        map.getLayer(
+          "geofence-outline"
+        )
+      ) {
+        map.removeLayer(
+          "geofence-outline"
+        );
+      }
+
+      if (
+        map.getLayer(
+          "geofence-fill"
+        )
+      ) {
+        map.removeLayer(
+          "geofence-fill"
+        );
+      }
+
+      // ------------------------------------------------------
+      // UPDATE / CREATE POLYGON SOURCE
+      // ------------------------------------------------------
+
+      const polygonSource =
+        map.getSource(
+          "geofences"
+        );
+
+      if (polygonSource) {
+        polygonSource.setData(
+          polygonData
+        );
+      } else {
+        map.addSource(
+          "geofences",
+          {
+            type: "geojson",
+
+            data: polygonData,
+          }
+        );
+      }
+
+      // ------------------------------------------------------
+      // ADD FILL
+      // ------------------------------------------------------
+
+      map.addLayer({
+        id: "geofence-fill",
+
+        type: "fill",
+
+        source: "geofences",
+
+        paint: {
+          "fill-color":
+            "#0f766e",
+
+          "fill-opacity":
+            0.12,
+        },
+      });
+
+      // ------------------------------------------------------
+      // ADD OUTLINE
+      // ------------------------------------------------------
+
+      map.addLayer({
+        id: "geofence-outline",
+
+        type: "line",
+
+        source: "geofences",
+
+        paint: {
+          "line-color":
+            "#0f766e",
+
+          "line-width": 3,
+
+          "line-opacity": 0.9,
+        },
+      });
+
+      // ------------------------------------------------------
+      // UPDATE / CREATE CENTER SOURCE
+      // ------------------------------------------------------
+
+      const centerSource =
+        map.getSource(
+          "geofence-centers"
+        );
+
+      if (centerSource) {
+        centerSource.setData(
+          centerData
+        );
+      } else {
+        map.addSource(
+          "geofence-centers",
+          {
+            type: "geojson",
+
+            data: centerData,
+          }
+        );
+      }
+
+      // ------------------------------------------------------
+      // ADD CENTER CIRCLE
+      // ------------------------------------------------------
+
+      map.addLayer({
+        id: "geofence-center",
+
+        type: "circle",
+
+        source:
+          "geofence-centers",
+
+        paint: {
+          "circle-radius": 7,
+
+          "circle-color":
+            "#0f766e",
+
+          "circle-stroke-color":
+            "#ffffff",
+
+          "circle-stroke-width":
+            2,
+        },
+      });
+    }, []);
+
+  // ==========================================================
+  // LOAD GEO-FENCES FROM BACKEND
+  // ==========================================================
+
+  const loadGeofences =
+    useCallback(async () => {
+      try {
+        setGeofenceLoading(
+          true
+        );
+
+        const response =
+          await fetch(
+            `${API_URL}/api/geofence`
+          );
+
+        if (!response.ok) {
+          throw new Error(
+            "Failed to load Geo-Fences"
+          );
+        }
+
+        const data =
+          await response.json();
+
+        if (
+          data.success &&
+          Array.isArray(
+            data.geofences
+          )
+        ) {
+          const formatted =
+            data.geofences.map(
+              (fence) => ({
+                ...fence,
+
+                id: Number(
+                  fence.id
+                ),
+
+                latitude:
+                  Number(
+                    fence.latitude
+                  ),
+
+                longitude:
+                  Number(
+                    fence.longitude
+                  ),
+
+                radius:
+                  Number(
+                    fence.radius
+                  ),
+
+                zoneType:
+                  fence.zone_type ||
+                  fence.zoneType ||
+                  "SAFE",
+
+                riskLevel:
+                  fence.risk_level ||
+                  fence.riskLevel ||
+                  "LOW",
+
+                alertOnEntry:
+                  toBoolean(
+                    fence.alert_on_entry ??
+                      fence.alertOnEntry
+                  ),
+
+                alertOnExit:
+                  toBoolean(
+                    fence.alert_on_exit ??
+                      fence.alertOnExit
+                  ),
+              })
+            );
+
+          geofencesRef.current =
+            formatted;
+
+          setGeofences(
+            formatted
+          );
+        } else {
+          geofencesRef.current =
+            [];
+
+          setGeofences([]);
+        }
+      } catch (error) {
+        console.error(
+          "Geo-Fence loading error:",
+          error
+        );
+      } finally {
+        setGeofenceLoading(
+          false
+        );
+      }
+    }, []);
+
+  // ==========================================================
+  // GEO-FENCE CLICK HANDLER
+  // ==========================================================
+
+  const handleGeofenceClick =
+    useCallback((event) => {
+      if (
+        !event.features?.length
+      ) {
+        return;
+      }
+
+      const feature =
+        event.features[0];
+
+      const properties =
+        feature.properties || {};
+
+      const fence =
+        geofencesRef.current.find(
+          (item) =>
+            Number(item.id) ===
+            Number(
+              properties.id
+            )
+        );
+
+      if (!fence) {
+        return;
+      }
+
+      setSelectedGeofence(
+        fence
+      );
+
+      // Stop automatic following
+      // while viewing fence details.
+      setFollowLocation(false);
+
+      followLocationRef.current =
+        false;
+
+      // Move map slightly toward
+      // selected Geo-Fence.
+      if (
+        mapRef.current
+      ) {
+        mapRef.current.flyTo({
+          center: [
+            fence.longitude,
+            fence.latitude,
+          ],
+
+          zoom: Math.max(
+            mapRef.current.getZoom(),
+            14
+          ),
+
+          speed: 0.8,
         });
       }
     }, []);
@@ -887,22 +1524,38 @@ export default function Map() {
     mapRef.current =
       map;
 
+    // --------------------------------------------------------
+    // CONTROLS
+    // --------------------------------------------------------
+
     map.addControl(
-      new maplibregl.NavigationControl({
-        showCompass: true,
-        showZoom: true,
-        visualizePitch: true,
-      }),
+      new maplibregl.NavigationControl(
+        {
+          showCompass: true,
+
+          showZoom: true,
+
+          visualizePitch:
+            true,
+        }
+      ),
       "bottom-right"
     );
 
     map.addControl(
-      new maplibregl.ScaleControl({
-        maxWidth: 120,
-        unit: "metric",
-      }),
+      new maplibregl.ScaleControl(
+        {
+          maxWidth: 120,
+
+          unit: "metric",
+        }
+      ),
       "bottom-left"
     );
+
+    // --------------------------------------------------------
+    // MAP LOAD
+    // --------------------------------------------------------
 
     map.on(
       "load",
@@ -910,15 +1563,111 @@ export default function Map() {
         setMapReady(true);
 
         addRouteLayers();
+
+        drawGeofences();
+      }
+    );
+
+    // --------------------------------------------------------
+    // GEO-FENCE CLICK
+    // --------------------------------------------------------
+
+    map.on(
+      "click",
+      "geofence-fill",
+      handleGeofenceClick
+    );
+
+    map.on(
+      "click",
+      "geofence-center",
+      handleGeofenceClick
+    );
+
+    // --------------------------------------------------------
+    // GEO-FENCE CURSOR
+    // --------------------------------------------------------
+
+    map.on(
+      "mouseenter",
+      "geofence-fill",
+      () => {
+        map.getCanvas().style.cursor =
+          "pointer";
       }
     );
 
     map.on(
-      "dragstart",
+      "mouseleave",
+      "geofence-fill",
       () => {
-        setFollowLocation(false);
+        map.getCanvas().style.cursor =
+          "";
       }
     );
+
+    map.on(
+      "mouseenter",
+      "geofence-center",
+      () => {
+        map.getCanvas().style.cursor =
+          "pointer";
+      }
+    );
+
+    map.on(
+      "mouseleave",
+      "geofence-center",
+      () => {
+        map.getCanvas().style.cursor =
+          "";
+      }
+    );
+
+    // --------------------------------------------------------
+    // CLICK OUTSIDE GEO-FENCE
+    // --------------------------------------------------------
+
+    map.on(
+      "click",
+      (event) => {
+        const features =
+          map.queryRenderedFeatures(
+            event.point,
+            {
+              layers: [
+                "geofence-fill",
+                "geofence-center",
+              ],
+            }
+          );
+
+        if (
+          features.length === 0
+        ) {
+          setSelectedGeofence(
+            null
+          );
+        }
+      }
+    );
+
+    // --------------------------------------------------------
+    // DRAG MAP
+    // --------------------------------------------------------
+
+    map.on(
+      "dragstart",
+      () => {
+        setFollowLocation(
+          false
+        );
+      }
+    );
+
+    // --------------------------------------------------------
+    // CLEANUP
+    // --------------------------------------------------------
 
     return () => {
       if (
@@ -967,7 +1716,45 @@ export default function Map() {
       mapRef.current =
         null;
     };
-  }, [addRouteLayers]);
+  }, [
+    addRouteLayers,
+    drawGeofences,
+    handleGeofenceClick,
+  ]);
+
+  // ==========================================================
+  // LOAD GEO-FENCES WHEN MAP IS READY
+  // ==========================================================
+
+  useEffect(() => {
+    if (!mapReady) {
+      return;
+    }
+
+    loadGeofences();
+  }, [
+    mapReady,
+    loadGeofences,
+  ]);
+
+  // ==========================================================
+  // DRAW GEO-FENCES WHEN DATA ARRIVES
+  // ==========================================================
+
+  useEffect(() => {
+    if (
+      !mapReady ||
+      !mapRef.current
+    ) {
+      return;
+    }
+
+    drawGeofences();
+  }, [
+    mapReady,
+    geofences,
+    drawGeofences,
+  ]);
 
   // ==========================================================
   // CHANGE MAP STYLE
@@ -985,7 +1772,9 @@ export default function Map() {
             ? BRIGHT_MAP_STYLE
             : MAP_STYLE;
 
-        setMapStyleMode(mode);
+        setMapStyleMode(
+          mode
+        );
 
         mapRef.current.setStyle(
           style
@@ -996,7 +1785,11 @@ export default function Map() {
           () => {
             addRouteLayers();
 
-            if (userLocationRef.current) {
+            drawGeofences();
+
+            if (
+              userLocationRef.current
+            ) {
               createUserMarker();
             }
 
@@ -1012,7 +1805,8 @@ export default function Map() {
               routeCoordinatesRef.current;
 
             if (
-              coordinates.length > 0
+              coordinates.length >
+              0
             ) {
               const source =
                 mapRef.current.getSource(
@@ -1038,6 +1832,7 @@ export default function Map() {
       },
       [
         addRouteLayers,
+        drawGeofences,
         createUserMarker,
         createDestinationMarker,
       ]
@@ -1170,11 +1965,9 @@ export default function Map() {
             enableHighAccuracy:
               true,
 
-            timeout:
-              20000,
+            timeout: 20000,
 
-            maximumAge:
-              0,
+            maximumAge: 0,
           }
         );
       },
@@ -1194,7 +1987,9 @@ export default function Map() {
       return;
     }
 
-    getCurrentLocation(true);
+    getCurrentLocation(
+      true
+    );
   }, [
     mapReady,
     getCurrentLocation,
@@ -1237,15 +2032,12 @@ export default function Map() {
           });
 
         const response =
-          await fetch(
-            url,
-            {
-              headers: {
-                Accept:
-                  "application/json",
-              },
-            }
-          );
+          await fetch(url, {
+            headers: {
+              Accept:
+                "application/json",
+            },
+          });
 
         if (!response.ok) {
           throw new Error(
@@ -1256,7 +2048,9 @@ export default function Map() {
         const data =
           await response.json();
 
-        setSearchResults(data);
+        setSearchResults(
+          data
+        );
 
         setShowSearchResults(
           true
@@ -1447,7 +2241,9 @@ export default function Map() {
       }
 
       try {
-        setRouteLoading(true);
+        setRouteLoading(
+          true
+        );
 
         setRouteError("");
 
@@ -1484,7 +2280,8 @@ export default function Map() {
           data.routes[0];
 
         const coordinatesArray =
-          route.geometry.coordinates;
+          route.geometry
+            .coordinates;
 
         routeCoordinatesRef.current =
           coordinatesArray;
@@ -1535,8 +2332,11 @@ export default function Map() {
           {
             padding: {
               top: 170,
+
               bottom: 220,
+
               left: 70,
+
               right: 70,
             },
 
@@ -1557,7 +2357,9 @@ export default function Map() {
 
         return null;
       } finally {
-        setRouteLoading(false);
+        setRouteLoading(
+          false
+        );
       }
     };
 
@@ -1635,14 +2437,17 @@ export default function Map() {
 
         const location = {
           lat:
-            position.coords.latitude,
+            position.coords
+              .latitude,
 
           lng:
-            position.coords.longitude,
+            position.coords
+              .longitude,
         };
 
         const currentAccuracy =
-          position.coords.accuracy;
+          position.coords
+            .accuracy;
 
         if (
           !isLocationJumpReasonable(
@@ -1736,16 +2541,19 @@ export default function Map() {
   // ==========================================================
 
   const handlePositionError =
-    useCallback((error) => {
-      console.error(
-        "GPS error:",
-        error
-      );
+    useCallback(
+      (error) => {
+        console.error(
+          "GPS error:",
+          error
+        );
 
-      setMessage(
-        "GPS signal is unavailable."
-      );
-    }, []);
+        setMessage(
+          "GPS signal is unavailable."
+        );
+      },
+      []
+    );
 
   // ==========================================================
   // START TOUR
@@ -1792,14 +2600,17 @@ export default function Map() {
 
           const location = {
             lat:
-              position.coords.latitude,
+              position.coords
+                .latitude,
 
             lng:
-              position.coords.longitude,
+              position.coords
+                .longitude,
           };
 
           const currentAccuracy =
-            position.coords.accuracy;
+            position.coords
+              .accuracy;
 
           if (
             !isLocationJumpReasonable(
@@ -1935,9 +2746,13 @@ export default function Map() {
               );
             }, 5000);
 
-          setTourStarted(true);
+          setTourStarted(
+            true
+          );
 
-          setTracking(true);
+          setTracking(
+            true
+          );
 
           setMessage(
             "Tour started."
@@ -1959,11 +2774,9 @@ export default function Map() {
           enableHighAccuracy:
             true,
 
-          timeout:
-            15000,
+          timeout: 15000,
 
-          maximumAge:
-            0,
+          maximumAge: 0,
         }
       );
     };
@@ -2026,9 +2839,13 @@ export default function Map() {
         }
       }
 
-      setTourStarted(false);
+      setTourStarted(
+        false
+      );
 
-      setTracking(false);
+      setTracking(
+        false
+      );
 
       clearRoute();
 
@@ -2043,12 +2860,20 @@ export default function Map() {
 
   const goToMyLocation =
     () => {
-      setFollowLocation(true);
+      setFollowLocation(
+        true
+      );
 
       followLocationRef.current =
         true;
 
-      getCurrentLocation(true);
+      setSelectedGeofence(
+        null
+      );
+
+      getCurrentLocation(
+        true
+      );
     };
 
   // ==========================================================
@@ -2070,109 +2895,158 @@ export default function Map() {
       );
     };
 
+  // ==========================================================
+  // SEND SOS
+  // ==========================================================
 
-// ============================================================
-// SEND SOS
-// ============================================================
-
-const sendSOS = async () => {
-  if (sosLoading) {
-    return;
-  }
-
-  try {
-    setSosLoading(true);
-    setMessage("");
-
-    const userId = getStoredUserId();
-    const location = userLocationRef.current;
-
-    // -----------------------------------------
-    // CHECK USER LOGIN
-    // -----------------------------------------
-    if (!userId) {
-      setMessage("Please login before sending SOS.");
-      return;
-    }
-
-    // -----------------------------------------
-    // CHECK LOCATION
-    // -----------------------------------------
-    if (!location) {
-      setMessage("Current location is not available.");
-      return;
-    }
-
-    console.log("========== SOS REQUEST ==========");
-    console.log("API URL:", API_URL);
-    console.log("User ID:", userId);
-    console.log("Latitude:", location.lat);
-    console.log("Longitude:", location.lng);
-    console.log("Risk:", risk);
-
-    // -----------------------------------------
-    // SEND SOS REQUEST
-    // -----------------------------------------
-    const response = await fetch(
-      `${API_URL}/api/sos`,
-      {
-        method: "POST",
-
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        body: JSON.stringify({
-          userId: userId,
-
-          latitude: location.lat,
-
-          longitude: location.lng,
-
-          risk: risk,
-
-          message: "Tourist SOS emergency alert",
-        }),
+  const sendSOS =
+    async () => {
+      if (sosLoading) {
+        return;
       }
-    );
 
-    // -----------------------------------------
-    // GET BACKEND RESPONSE
-    // -----------------------------------------
-    const data = await response.json();
+      try {
+        setSosLoading(
+          true
+        );
 
-    console.log("SOS HTTP STATUS:", response.status);
-    console.log("SOS BACKEND RESPONSE:", data);
+        setMessage("");
 
-    // -----------------------------------------
-    // CHECK RESPONSE
-    // -----------------------------------------
-    if (!response.ok || !data.success) {
-      throw new Error(
-        data.message ||
-          `SOS request failed with status ${response.status}`
-      );
-    }
+        const userId =
+          getStoredUserId();
 
-    // -----------------------------------------
-    // SUCCESS
-    // -----------------------------------------
-    setMessage(
-      data.message || "SOS alert sent successfully."
-    );
+        const location =
+          userLocationRef.current;
 
-  } catch (error) {
-    console.error("SOS backend error:", error);
+        // ----------------------------------------------------
+        // CHECK LOGIN
+        // ----------------------------------------------------
 
-    setMessage(
-      error.message || "Unable to send SOS alert."
-    );
+        if (!userId) {
+          setMessage(
+            "Please login before sending SOS."
+          );
 
-  } finally {
-    setSosLoading(false);
-  }
-};
+          return;
+        }
 
+        // ----------------------------------------------------
+        // CHECK LOCATION
+        // ----------------------------------------------------
+
+        if (!location) {
+          setMessage(
+            "Current location is not available."
+          );
+
+          return;
+        }
+
+        console.log(
+          "========== SOS REQUEST =========="
+        );
+
+        console.log(
+          "API URL:",
+          API_URL
+        );
+
+        console.log(
+          "User ID:",
+          userId
+        );
+
+        console.log(
+          "Latitude:",
+          location.lat
+        );
+
+        console.log(
+          "Longitude:",
+          location.lng
+        );
+
+        console.log(
+          "Risk:",
+          risk
+        );
+
+        // ----------------------------------------------------
+        // SEND SOS
+        // ----------------------------------------------------
+
+        const response =
+          await fetch(
+            `${API_URL}/api/sos`,
+            {
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
+
+              body:
+                JSON.stringify({
+                  userId,
+
+                  latitude:
+                    location.lat,
+
+                  longitude:
+                    location.lng,
+
+                  risk,
+
+                  message:
+                    "Tourist SOS emergency alert",
+                }),
+            }
+          );
+
+        const data =
+          await response.json();
+
+        console.log(
+          "SOS HTTP STATUS:",
+          response.status
+        );
+
+        console.log(
+          "SOS BACKEND RESPONSE:",
+          data
+        );
+
+        if (
+          !response.ok ||
+          !data.success
+        ) {
+          throw new Error(
+            data.message ||
+              `SOS request failed with status ${response.status}`
+          );
+        }
+
+        setMessage(
+          data.message ||
+            "SOS alert sent successfully."
+        );
+      } catch (error) {
+        console.error(
+          "SOS backend error:",
+          error
+        );
+
+        setMessage(
+          error.message ||
+            "Unable to send SOS alert."
+        );
+      } finally {
+        setSosLoading(
+          false
+        );
+      }
+    };
 
   // ==========================================================
   // CLEANUP
@@ -2213,12 +3087,6 @@ const sendSOS = async () => {
     <div className="toursafe-map-page">
 
       {/* ====================================================
-          NAVBAR
-      ===================================================== */}
-
-      {/* <Navbar /> */}
-
-      {/* ====================================================
           MAP
       ===================================================== */}
 
@@ -2226,6 +3094,171 @@ const sendSOS = async () => {
         ref={mapContainerRef}
         className="toursafe-map"
       />
+
+      {/* ====================================================
+          GEO-FENCE DETAILS
+      ===================================================== */}
+
+      {selectedGeofence && (
+        <div className="toursafe-geofence-details">
+
+          {/* HEADER */}
+
+          <div className="toursafe-geofence-details-header">
+
+            <div>
+              <small>
+                GEO-FENCE
+              </small>
+
+              <h3>
+                {selectedGeofence.name}
+              </h3>
+            </div>
+
+            <button
+              type="button"
+              className="toursafe-geofence-close"
+              onClick={() =>
+                setSelectedGeofence(
+                  null
+                )
+              }
+            >
+              <X size={18} />
+            </button>
+
+          </div>
+
+          {/* DESCRIPTION */}
+
+          <div className="toursafe-geofence-description">
+
+            <strong>
+              Description
+            </strong>
+
+            <p>
+              {selectedGeofence.description ||
+                "No description available."}
+            </p>
+
+          </div>
+
+          {/* INFORMATION */}
+
+          <div className="toursafe-geofence-info">
+
+            <div>
+              <span>
+                Radius
+              </span>
+
+              <strong>
+                {
+                  selectedGeofence.radius
+                }{" "}
+                m
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                Zone Type
+              </span>
+
+              <strong>
+                {selectedGeofence.zoneType ||
+                  selectedGeofence.zone_type ||
+                  "SAFE"}
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                Risk Level
+              </span>
+
+              <strong>
+                {selectedGeofence.riskLevel ||
+                  selectedGeofence.risk_level ||
+                  "LOW"}
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                Status
+              </span>
+
+              <strong>
+                {selectedGeofence.status ||
+                  "ACTIVE"}
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                Latitude
+              </span>
+
+              <strong>
+                {Number(
+                  selectedGeofence.latitude
+                ).toFixed(6)}
+              </strong>
+            </div>
+
+            <div>
+              <span>
+                Longitude
+              </span>
+
+              <strong>
+                {Number(
+                  selectedGeofence.longitude
+                ).toFixed(6)}
+              </strong>
+            </div>
+
+          </div>
+
+          {/* ALERT SETTINGS */}
+
+          <div className="toursafe-geofence-alerts">
+
+            <strong>
+              Alert Settings
+            </strong>
+
+            <div>
+              <span>
+                Entry Alert
+              </span>
+
+              <b>
+                {selectedGeofence.alertOnEntry
+                  ? "ON"
+                  : "OFF"}
+              </b>
+            </div>
+
+            <div>
+              <span>
+                Exit Alert
+              </span>
+
+              <b>
+                {selectedGeofence.alertOnExit
+                  ? "ON"
+                  : "OFF"}
+              </b>
+            </div>
+
+          </div>
+
+        </div>
+      )}
 
       {/* ====================================================
           SEARCH
@@ -2248,7 +3281,9 @@ const sendSOS = async () => {
               const value =
                 event.target.value;
 
-              setSearchText(value);
+              setSearchText(
+                value
+              );
 
               if (!value.trim()) {
                 setSearchResults([]);
@@ -2287,7 +3322,9 @@ const sendSOS = async () => {
             onClick={
               searchPlaces
             }
-            disabled={searching}
+            disabled={
+              searching
+            }
           >
             {searching ? (
               <RefreshCw
@@ -2301,12 +3338,11 @@ const sendSOS = async () => {
 
         </div>
 
-        {/* ==================================================
-            SEARCH RESULTS
-        ================================================== */}
+        {/* SEARCH RESULTS */}
 
         {showSearchResults &&
-          searchResults.length > 0 && (
+          searchResults.length >
+            0 && (
             <div className="toursafe-search-results">
 
               {searchResults.map(
@@ -2452,9 +3488,7 @@ const sendSOS = async () => {
 
           </div>
 
-          {/* ==================================================
-              ROUTE SUMMARY
-          ================================================== */}
+          {/* ROUTE SUMMARY */}
 
           {(distance !== null ||
             duration !== null) && (
@@ -2594,7 +3628,9 @@ const sendSOS = async () => {
           className="toursafe-map-tool"
           title="Refresh location"
           onClick={() =>
-            getCurrentLocation(true)
+            getCurrentLocation(
+              true
+            )
           }
         >
           <Crosshair size={20} />
@@ -2626,7 +3662,9 @@ const sendSOS = async () => {
                 "standard"
               );
 
-              setShowLayers(false);
+              setShowLayers(
+                false
+              );
             }}
           >
             Standard
@@ -2645,7 +3683,9 @@ const sendSOS = async () => {
                 "bright"
               );
 
-              setShowLayers(false);
+              setShowLayers(
+                false
+              );
             }}
           >
             Bright

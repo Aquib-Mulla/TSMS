@@ -12,6 +12,7 @@ import AdminDashboard from "../views/admin/AdminDashboard";
 import Tourists from "../views/admin/Tourists";
 import LiveMap from "../views/admin/LiveMap";
 import SOSAlerts from "../views/admin/SOSAlerts";
+import GeoFence from "../views/admin/GeoFence";
 function AppRoutes() {
   return (
     <Routes>
@@ -26,7 +27,8 @@ function AppRoutes() {
       <Route path="/admin/dashboard" element={<AdminDashboard />} />
       <Route path="/admin/tourists" element={<Tourists />} />
       <Route path="/admin/livemap" element={<LiveMap />}/>
-      <Route path="/admin/sos-alerts"element={<SOSAlerts />}/>
+      <Route path="/admin/sos-alerts" element={<SOSAlerts />}/>
+      <Route path="/admin/geofences" element={<GeoFence />}/>
     </Routes>
   );
 }

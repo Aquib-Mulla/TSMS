@@ -12,6 +12,7 @@ const adminRoutes = require("./routes/admin.routes");
 const authRoutes = require("./routes/auth.routes");
 const locationRoutes = require("./routes/location.routes");
 const sosRoutes = require("./routes/sos.routes");
+const geofenceRoutes = require("./routes/geofence.routes");
 
 const app = express();
 
@@ -22,7 +23,9 @@ const app = express();
 
 app.use(
     cors({
-        origin: "*"
+        origin: "*",
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"]
     })
 );
 
@@ -43,7 +46,7 @@ const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: "*",
-        methods: ["GET", "POST", "PATCH"]
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE"]
     }
 });
 
@@ -138,6 +141,11 @@ io.on("connection", (socket) => {
         );
 
         if (!data || !data.userId) {
+
+            console.log(
+                "Invalid tourist:stop data"
+            );
+
             return;
         }
 
@@ -157,11 +165,12 @@ io.on("connection", (socket) => {
     // SOCKET DISCONNECTED
     // ==========================================
 
-    socket.on("disconnect", () => {
+    socket.on("disconnect", (reason) => {
 
         console.log(
             "Socket disconnected:",
-            socket.id
+            socket.id,
+            reason
         );
 
     });
@@ -206,7 +215,6 @@ app.use(
 
 // ------------------------------------------
 // SOS
-// IMPORTANT: io is already created here
 // ------------------------------------------
 
 app.use(
@@ -215,9 +223,9 @@ app.use(
 );
 
 
-// ==========================================
-// SOS TEST ROUTE
-// ==========================================
+// ------------------------------------------
+// SOS TEST
+// ------------------------------------------
 
 app.get(
     "/api/sos/test",
@@ -229,6 +237,18 @@ app.get(
         });
 
     }
+);
+
+
+// ------------------------------------------
+// GEO-FENCE
+// IMPORTANT:
+// Frontend uses /api/geofence
+// ------------------------------------------
+
+app.use(
+    "/api/geofence",
+    geofenceRoutes
 );
 
 
@@ -290,12 +310,10 @@ const frontendPath =
         "../dist"
     );
 
-
 console.log(
     "Frontend path:",
     frontendPath
 );
-
 
 app.use(
     express.static(frontendPath)
@@ -329,9 +347,8 @@ app.use(
     }
 );
 
-
 // ==========================================
-// API 404
+// API 404 HANDLER
 // ==========================================
 
 app.use(
@@ -346,7 +363,10 @@ app.use(
                 success: false,
 
                 message:
-                    "API route not found"
+                    "API route not found",
+
+                path:
+                    req.originalUrl
 
             });
 
@@ -367,7 +387,6 @@ app.use(
 const PORT =
     process.env.PORT || 5000;
 
-
 server.listen(
     PORT,
     () => {
@@ -378,6 +397,14 @@ server.listen(
 
         console.log(
             "SOS API: /api/sos"
+        );
+
+        console.log(
+            "Geo-Fence API: /api/geofence"
+        );
+
+        console.log(
+            "Socket.IO: /socket.io"
         );
 
     }

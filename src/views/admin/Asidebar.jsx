@@ -93,7 +93,7 @@ const Asidebar = () => {
     },
     {
       name: "Danger Zones",
-      path: "/admin/danger-zones",
+      path: "/admin/geofences",
       icon: ShieldAlert,
     },
     {

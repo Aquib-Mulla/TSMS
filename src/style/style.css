@@ -3159,5 +3159,293 @@
 
 
 /* ============================================================
-   END TOURSAFE MAP CSS
-   ============================================================ */
+   extra for map for geofences
+   ======================================================================================================================================= */
+   /* ==========================================================
+   TOURSAFE GEO-FENCE DETAILS
+========================================================== */
+
+.toursafe-geofence-details {
+  position: absolute;
+
+  top: 90px;
+
+  right: 24px;
+
+  width: 340px;
+
+  max-width: calc(100vw - 48px);
+
+  max-height: calc(100vh - 230px);
+
+  overflow-y: auto;
+
+  background: #ffffff;
+
+  color: #000000;
+
+  border: 1px solid #0f766e;
+
+  border-radius: 14px;
+
+  padding: 20px;
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.18);
+
+  z-index: 50;
+}
+
+
+/* ==========================================================
+   HEADER
+========================================================== */
+
+.toursafe-geofence-details-header {
+  display: flex;
+
+  align-items: flex-start;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding-bottom: 15px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.toursafe-geofence-details-header small {
+  display: block;
+
+  margin-bottom: 5px;
+
+  color: #0f766e;
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  letter-spacing: 0.12em;
+}
+
+.toursafe-geofence-details-header h3 {
+  margin: 0;
+
+  color: #000000;
+
+  font-size: 20px;
+
+  line-height: 1.3;
+
+  word-break: break-word;
+}
+
+
+/* ==========================================================
+   CLOSE BUTTON
+========================================================== */
+
+.toursafe-geofence-close {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  width: 34px;
+
+  height: 34px;
+
+  flex-shrink: 0;
+
+  border: none;
+
+  border-radius: 8px;
+
+  background: #f1f5f5;
+
+  color: #000000;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.toursafe-geofence-close:hover {
+  background: #0f766e;
+
+  color: #ffffff;
+}
+
+
+/* ==========================================================
+   DESCRIPTION
+========================================================== */
+
+.toursafe-geofence-description {
+  padding: 15px 0;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.toursafe-geofence-description strong {
+  display: block;
+
+  margin-bottom: 7px;
+
+  color: #000000;
+
+  font-size: 13px;
+}
+
+.toursafe-geofence-description p {
+  margin: 0;
+
+  color: #555555;
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+/* ==========================================================
+   INFORMATION GRID
+========================================================== */
+
+.toursafe-geofence-info {
+  display: grid;
+
+  grid-template-columns:
+    1fr 1fr;
+
+  gap: 13px;
+
+  padding: 16px 0;
+}
+
+.toursafe-geofence-info div {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+
+  min-width: 0;
+}
+
+.toursafe-geofence-info span {
+  color: #777777;
+
+  font-size: 11px;
+}
+
+.toursafe-geofence-info strong {
+  color: #000000;
+
+  font-size: 13px;
+
+  word-break: break-word;
+}
+
+
+/* ==========================================================
+   ALERT SETTINGS
+========================================================== */
+
+.toursafe-geofence-alerts {
+  padding-top: 15px;
+
+  border-top: 1px solid #e5e7eb;
+}
+
+.toursafe-geofence-alerts > strong {
+  display: block;
+
+  margin-bottom: 8px;
+
+  color: #000000;
+
+  font-size: 13px;
+}
+
+.toursafe-geofence-alerts div {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding: 7px 0;
+}
+
+.toursafe-geofence-alerts span {
+  color: #555555;
+
+  font-size: 13px;
+}
+
+.toursafe-geofence-alerts b {
+  color: #0f766e;
+
+  font-size: 12px;
+}
+
+
+/* ==========================================================
+   MOBILE
+========================================================== */
+
+@media (max-width: 600px) {
+
+  .toursafe-geofence-details {
+    top: auto;
+
+    right: 12px;
+
+    bottom: 120px;
+
+    left: 12px;
+
+    width: auto;
+
+    max-width: none;
+
+    max-height: 55vh;
+
+    padding: 16px;
+
+    border-radius: 12px;
+  }
+
+  .toursafe-geofence-details-header h3 {
+    font-size: 18px;
+  }
+
+  .toursafe-geofence-info {
+    gap: 10px;
+  }
+
+}
+
+
+/* ==========================================================
+   VERY SMALL MOBILE
+========================================================== */
+
+@media (max-width: 400px) {
+
+  .toursafe-geofence-details {
+    bottom: 115px;
+
+    padding: 14px;
+  }
+
+  .toursafe-geofence-info {
+    grid-template-columns: 1fr;
+  }
+
+}

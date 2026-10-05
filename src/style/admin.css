@@ -4142,3 +4142,1400 @@ td strong {
   line-height: 1;
   flex-shrink: 0;
 }
+
+/* geo fence =================================================================================================================================== */
+/* ============================================================
+   GEO-FENCE MANAGEMENT PAGE
+   Add this at the bottom of:
+   src/style/admin.css
+============================================================ */
+
+
+/* ============================================================
+   PAGE
+============================================================ */
+
+.geofence-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+  background: #ffffff;
+  color: #000000;
+}
+
+
+/* ============================================================
+   HEADER
+============================================================ */
+
+.geofence-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.geofence-header h1 {
+  margin: 0;
+  color: #000000;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.geofence-header p {
+  margin: 7px 0 0;
+  color: #666666;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+
+/* ============================================================
+   TOTAL FENCE COUNT
+============================================================ */
+
+.geofence-count {
+  min-width: 110px;
+  padding: 13px 18px;
+  border: 1px solid #dce9e7;
+  border-radius: 10px;
+  background: #ffffff;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.geofence-count strong {
+  color: #0f766e;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.geofence-count span {
+  margin-top: 5px;
+  color: #666666;
+  font-size: 11px;
+}
+
+
+/* ============================================================
+   MAIN CONTENT
+============================================================ */
+
+.geofence-content {
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(350px, 420px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+
+/* ============================================================
+   LEFT FORM CARD
+============================================================ */
+
+.geofence-card {
+  min-width: 0;
+  background: #ffffff;
+  border: 1px solid #e2e8e7;
+  border-radius: 12px;
+  overflow: hidden;
+
+  box-shadow:
+    0 3px 12px rgba(0, 0, 0, 0.05);
+}
+
+
+/* ============================================================
+   TABS
+============================================================ */
+
+.geofence-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+
+  border-bottom: 1px solid #e5e5e5;
+  background: #ffffff;
+}
+
+.geofence-tab {
+  min-height: 52px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border: 0;
+  border-bottom: 3px solid transparent;
+
+  background: #ffffff;
+  color: #666666;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.geofence-tab:hover {
+  color: #0f766e;
+  background: #f7fbfa;
+}
+
+.geofence-tab.active {
+  color: #0f766e;
+  border-bottom-color: #0f766e;
+  background: #ffffff;
+}
+
+
+/* ============================================================
+   FORM
+============================================================ */
+
+.geofence-form {
+  padding: 22px;
+}
+
+.geofence-form-title {
+  margin-bottom: 20px;
+}
+
+.geofence-form-title h2 {
+  margin: 0;
+  color: #000000;
+  font-size: 19px;
+  font-weight: 700;
+}
+
+.geofence-form-title p {
+  margin: 6px 0 0;
+  color: #777777;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+
+/* ============================================================
+   FORM GROUP
+============================================================ */
+
+.geofence-form-group {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.geofence-form-group label {
+  display: block;
+  margin-bottom: 7px;
+
+  color: #222222;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.geofence-form-group input,
+.geofence-form-group select,
+.geofence-form-group textarea {
+  width: 100%;
+  box-sizing: border-box;
+
+  border: 1px solid #d5dedd;
+  border-radius: 7px;
+
+  background: #ffffff;
+  color: #000000;
+
+  font-family: inherit;
+  font-size: 13px;
+
+  outline: none;
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.geofence-form-group input,
+.geofence-form-group select {
+  height: 40px;
+  padding: 0 11px;
+}
+
+.geofence-form-group textarea {
+  min-height: 82px;
+  padding: 10px 11px;
+  resize: vertical;
+}
+
+.geofence-form-group input::placeholder,
+.geofence-form-group textarea::placeholder {
+  color: #a3a3a3;
+}
+
+.geofence-form-group input:focus,
+.geofence-form-group select:focus,
+.geofence-form-group textarea:focus {
+  border-color: #0f766e;
+
+  box-shadow:
+    0 0 0 3px rgba(15, 118, 110, 0.10);
+}
+
+.geofence-form-group small {
+  display: block;
+  margin-top: 5px;
+
+  color: #888888;
+  font-size: 10px;
+}
+
+
+/* ============================================================
+   COORDINATE ROW
+============================================================ */
+
+.geofence-coordinate-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+
+/* ============================================================
+   MAP SELECTION HELP
+============================================================ */
+
+.geofence-map-help {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+
+  margin-top: -4px;
+  margin-bottom: 17px;
+
+  padding: 11px 12px;
+
+  border: 1px solid #d7ebe8;
+  border-left: 3px solid #0f766e;
+
+  border-radius: 7px;
+
+  background: #f4faf9;
+}
+
+.geofence-map-help svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: #0f766e;
+}
+
+.geofence-map-help div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.geofence-map-help strong {
+  color: #0f766e;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.geofence-map-help span {
+  color: #666666;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+
+/* ============================================================
+   RADIUS
+============================================================ */
+
+.geofence-radius-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.geofence-radius-wrapper input {
+  padding-right: 70px !important;
+}
+
+.geofence-radius-wrapper span {
+  position: absolute;
+  top: 50%;
+  right: 11px;
+
+  transform: translateY(-50%);
+
+  color: #777777;
+  font-size: 11px;
+
+  pointer-events: none;
+}
+
+
+/* ============================================================
+   CHECKBOX / ALERT OPTIONS
+============================================================ */
+
+.geofence-alert-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  margin-top: 2px;
+  margin-bottom: 18px;
+
+  padding: 12px;
+
+  border: 1px solid #e4e8e7;
+  border-radius: 7px;
+
+  background: #fafafa;
+}
+
+.geofence-alert-options label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  color: #333333;
+
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.geofence-alert-options input {
+  width: 15px;
+  height: 15px;
+
+  margin: 0;
+
+  accent-color: #0f766e;
+
+  cursor: pointer;
+}
+
+.geofence-alert-options span {
+  line-height: 1.4;
+}
+
+
+/* ============================================================
+   CREATE BUTTON
+============================================================ */
+
+.geofence-create-btn {
+  width: 100%;
+  min-height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border: 1px solid #0f766e;
+  border-radius: 7px;
+
+  background: #0f766e;
+  color: #ffffff;
+
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.1s ease;
+}
+
+.geofence-create-btn:hover {
+  background: #0b625c;
+  border-color: #0b625c;
+}
+
+.geofence-create-btn:active {
+  transform: translateY(1px);
+}
+
+.geofence-create-btn:disabled {
+  background: #b7c5c3;
+  border-color: #b7c5c3;
+  color: #ffffff;
+  cursor: not-allowed;
+}
+
+
+/* ============================================================
+   MAP CARD
+============================================================ */
+
+.geofence-map-card {
+  min-width: 0;
+  min-height: 620px;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border: 1px solid #e2e8e7;
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 12px rgba(0, 0, 0, 0.05);
+}
+
+
+/* ============================================================
+   MAP HEADER
+============================================================ */
+
+.geofence-map-header {
+  min-height: 65px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 13px 17px;
+
+  border-bottom: 1px solid #e5e5e5;
+
+  background: #ffffff;
+}
+
+.geofence-map-header h2 {
+  margin: 0;
+
+  color: #000000;
+
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.geofence-map-header p {
+  margin: 4px 0 0;
+
+  color: #777777;
+
+  font-size: 11px;
+}
+
+
+/* ============================================================
+   MAP STATUS
+============================================================ */
+
+.geofence-map-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 9px;
+
+  border: 1px solid #d8ebe8;
+  border-radius: 20px;
+
+  color: #0f766e;
+
+  background: #f4faf9;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.geofence-map-status span {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: #0f766e;
+}
+
+
+/* ============================================================
+   MAP
+============================================================ */
+
+.geofence-map {
+  position: relative;
+
+  width: 100%;
+  height: 520px;
+
+  flex: 1;
+
+  overflow: hidden;
+
+  background: #eeeeee;
+}
+
+.geofence-map .maplibregl-map {
+  width: 100%;
+  height: 100%;
+}
+
+
+/* ============================================================
+   MAPLIBRE CONTROLS
+============================================================ */
+
+.geofence-map .maplibregl-ctrl-group {
+  overflow: hidden;
+
+  border: 1px solid #dddddd;
+
+  border-radius: 7px;
+
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.geofence-map .maplibregl-ctrl-group button {
+  width: 32px;
+  height: 32px;
+}
+
+.geofence-map .maplibregl-ctrl-group button:hover {
+  background: #f0f8f7;
+}
+
+.geofence-map .maplibregl-ctrl-scale {
+  margin: 0 0 10px 10px;
+
+  border-color: #333333;
+
+  color: #222222;
+
+  background: rgba(255, 255, 255, 0.9);
+
+  font-size: 10px;
+}
+
+
+/* ============================================================
+   MAP INFO
+============================================================ */
+
+.geofence-map-info {
+  min-height: 43px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 12px;
+
+  padding: 9px 14px;
+
+  border-top: 1px solid #e5e5e5;
+
+  background: #ffffff;
+
+  color: #666666;
+
+  font-size: 11px;
+}
+
+.geofence-map-info > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.geofence-map-info svg {
+  color: #0f766e;
+}
+
+.geofence-selected-coordinates {
+  padding: 5px 9px;
+
+  border-radius: 5px;
+
+  background: #f4faf9;
+
+  color: #0f766e;
+
+  font-size: 10px;
+}
+
+.geofence-selected-coordinates strong {
+  margin-right: 4px;
+}
+
+
+/* ============================================================
+   EXCEL SECTION
+============================================================ */
+
+.geofence-excel-section {
+  padding: 22px;
+}
+
+.geofence-upload-box {
+  min-height: 230px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  border: 1.5px dashed #b8d5d1;
+  border-radius: 10px;
+
+  background: #f8fbfb;
+
+  text-align: center;
+}
+
+.geofence-upload-box > svg {
+  margin-bottom: 10px;
+
+  color: #0f766e;
+}
+
+.geofence-upload-box h3 {
+  margin: 0;
+
+  color: #000000;
+
+  font-size: 15px;
+}
+
+.geofence-upload-box p {
+  margin: 6px 0 15px;
+
+  color: #777777;
+
+  font-size: 11px;
+}
+
+
+/* ============================================================
+   CHOOSE FILE BUTTON
+============================================================ */
+
+.geofence-file-btn {
+  min-height: 38px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 0 14px;
+
+  border: 1px solid #0f766e;
+  border-radius: 6px;
+
+  background: #ffffff;
+  color: #0f766e;
+
+  font-size: 12px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.geofence-file-btn:hover {
+  background: #0f766e;
+  color: #ffffff;
+}
+
+
+/* ============================================================
+   SELECTED FILE
+============================================================ */
+
+.geofence-selected-file {
+  width: 100%;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-top: 14px;
+  padding: 9px 10px;
+
+  border: 1px solid #d8ebe8;
+  border-radius: 6px;
+
+  background: #ffffff;
+
+  text-align: left;
+}
+
+.geofence-selected-file > svg {
+  flex-shrink: 0;
+  color: #0f766e;
+}
+
+.geofence-selected-file span {
+  min-width: 0;
+  flex: 1;
+
+  overflow: hidden;
+
+  color: #333333;
+
+  font-size: 11px;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.geofence-selected-file button {
+  width: 25px;
+  height: 25px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  border: 0;
+  border-radius: 5px;
+
+  background: #f2f2f2;
+  color: #666666;
+
+  cursor: pointer;
+}
+
+.geofence-selected-file button:hover {
+  background: #eeeeee;
+  color: #000000;
+}
+
+
+/* ============================================================
+   EXCEL FORMAT
+============================================================ */
+
+.geofence-excel-format {
+  margin: 18px 0;
+
+  padding: 14px;
+
+  border: 1px solid #e4e8e7;
+  border-radius: 8px;
+
+  background: #ffffff;
+}
+
+.geofence-excel-format h3 {
+  margin: 0 0 10px;
+
+  color: #000000;
+
+  font-size: 13px;
+}
+
+.geofence-column-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.geofence-column-list span {
+  padding: 5px 8px;
+
+  border-radius: 4px;
+
+  background: #edf7f5;
+  color: #0f766e;
+
+  font-family: monospace;
+  font-size: 10px;
+}
+
+.geofence-excel-format p {
+  margin: 10px 0 0;
+
+  color: #888888;
+
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+
+/* ============================================================
+   TABLE CARD
+============================================================ */
+
+.geofence-table-card {
+  width: 100%;
+  margin-top: 20px;
+
+  overflow: hidden;
+
+  border: 1px solid #e2e8e7;
+  border-radius: 12px;
+
+  background: #ffffff;
+
+  box-shadow:
+    0 3px 12px rgba(0, 0, 0, 0.05);
+}
+
+
+/* ============================================================
+   TABLE HEADER
+============================================================ */
+
+.geofence-table-header {
+  min-height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 14px 18px;
+
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.geofence-table-header h2 {
+  margin: 0;
+
+  color: #000000;
+
+  font-size: 17px;
+}
+
+.geofence-table-header p {
+  margin: 4px 0 0;
+
+  color: #777777;
+
+  font-size: 11px;
+}
+
+.geofence-table-count {
+  padding: 6px 10px;
+
+  border-radius: 5px;
+
+  background: #edf7f5;
+  color: #0f766e;
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+/* ============================================================
+   EMPTY STATE
+============================================================ */
+
+.geofence-empty {
+  min-height: 180px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  padding: 25px;
+
+  text-align: center;
+}
+
+.geofence-empty svg {
+  margin-bottom: 10px;
+
+  color: #0f766e;
+}
+
+.geofence-empty h3 {
+  margin: 0;
+
+  color: #222222;
+
+  font-size: 15px;
+}
+
+.geofence-empty p {
+  max-width: 350px;
+
+  margin: 6px 0 0;
+
+  color: #888888;
+
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+
+/* ============================================================
+   TABLE WRAPPER
+============================================================ */
+
+.geofence-table-wrapper {
+  width: 100%;
+
+  overflow-x: auto;
+}
+
+
+/* ============================================================
+   TABLE
+============================================================ */
+
+.geofence-table {
+  width: 100%;
+
+  border-collapse: collapse;
+
+  min-width: 800px;
+}
+
+.geofence-table th {
+  padding: 11px 14px;
+
+  border-bottom: 1px solid #e4e7e6;
+
+  background: #fafcfc;
+
+  color: #666666;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  text-align: left;
+
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.geofence-table td {
+  padding: 13px 14px;
+
+  border-bottom: 1px solid #eeeeee;
+
+  color: #444444;
+
+  font-size: 11px;
+
+  vertical-align: middle;
+}
+
+.geofence-table tbody tr {
+  transition:
+    background 0.15s ease;
+}
+
+.geofence-table tbody tr:hover {
+  background: #f8fbfb;
+}
+
+.geofence-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.geofence-table td strong {
+  color: #222222;
+
+  font-size: 12px;
+}
+
+
+/* ============================================================
+   ZONE BADGE
+============================================================ */
+
+.geofence-zone-badge {
+  display: inline-flex;
+
+  padding: 4px 7px;
+
+  border-radius: 4px;
+
+  background: #edf7f5;
+  color: #0f766e;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   RISK BADGE
+============================================================ */
+
+.geofence-risk-badge {
+  display: inline-flex;
+
+  padding: 4px 7px;
+
+  border-radius: 4px;
+
+  background: #f4f4f4;
+  color: #444444;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   STATUS
+============================================================ */
+
+.geofence-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 4px 7px;
+
+  border-radius: 4px;
+
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.geofence-status-badge span {
+  width: 6px;
+  height: 6px;
+
+  border-radius: 50%;
+}
+
+.geofence-status-badge.active {
+  background: #edf7f5;
+  color: #0f766e;
+}
+
+.geofence-status-badge.active span {
+  background: #0f766e;
+}
+
+.geofence-status-badge.inactive {
+  background: #f2f2f2;
+  color: #777777;
+}
+
+.geofence-status-badge.inactive span {
+  background: #999999;
+}
+
+
+/* ============================================================
+   ACTION BUTTONS
+============================================================ */
+
+.geofence-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.geofence-view-btn,
+.geofence-delete-btn {
+  width: 31px;
+  height: 31px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 6px;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.geofence-view-btn {
+  border: 1px solid #cfe5e2;
+
+  background: #f5faf9;
+  color: #0f766e;
+}
+
+.geofence-view-btn:hover {
+  background: #0f766e;
+  color: #ffffff;
+  border-color: #0f766e;
+}
+
+.geofence-delete-btn {
+  border: 1px solid #dddddd;
+
+  background: #ffffff;
+  color: #555555;
+}
+
+.geofence-delete-btn:hover {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+
+/* ============================================================
+   MAPLIBRE POPUP
+============================================================ */
+
+.geofence-map .maplibregl-popup-content {
+  padding: 13px;
+
+  border-radius: 8px;
+
+  box-shadow:
+    0 4px 18px rgba(0, 0, 0, 0.16);
+}
+
+.geofence-map .maplibregl-popup-close-button {
+  width: 25px;
+  height: 25px;
+
+  color: #666666;
+
+  font-size: 18px;
+}
+
+.geofence-map .maplibregl-popup-close-button:hover {
+  background: transparent;
+  color: #000000;
+}
+
+.geofence-map .maplibregl-popup-tip {
+  border-top-color: #ffffff;
+}
+
+
+/* ============================================================
+   RESPONSIVE - TABLET
+============================================================ */
+
+@media (max-width: 1100px) {
+
+  .geofence-content {
+    grid-template-columns: 360px minmax(0, 1fr);
+  }
+
+  .geofence-form {
+    padding: 18px;
+  }
+
+  .geofence-map-card {
+    min-height: 580px;
+  }
+
+  .geofence-map {
+    height: 480px;
+  }
+
+}
+
+
+/* ============================================================
+   RESPONSIVE - SMALL TABLET
+============================================================ */
+
+@media (max-width: 900px) {
+
+  .geofence-page {
+    padding: 18px;
+  }
+
+  .geofence-content {
+    grid-template-columns: 1fr;
+  }
+
+  .geofence-card {
+    width: 100%;
+  }
+
+  .geofence-map-card {
+    min-height: 500px;
+  }
+
+  .geofence-map {
+    height: 450px;
+  }
+
+}
+
+
+/* ============================================================
+   RESPONSIVE - MOBILE
+============================================================ */
+
+@media (max-width: 600px) {
+
+  .geofence-page {
+    padding: 12px;
+  }
+
+  .geofence-header {
+    align-items: flex-start;
+  }
+
+  .geofence-header h1 {
+    font-size: 22px;
+  }
+
+  .geofence-header p {
+    font-size: 12px;
+  }
+
+  .geofence-count {
+    min-width: 75px;
+    padding: 10px;
+  }
+
+  .geofence-count strong {
+    font-size: 19px;
+  }
+
+  .geofence-count span {
+    font-size: 9px;
+  }
+
+  .geofence-coordinate-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .geofence-form {
+    padding: 15px;
+  }
+
+  .geofence-map-card {
+    min-height: 450px;
+  }
+
+  .geofence-map {
+    height: 380px;
+  }
+
+  .geofence-map-header {
+    padding: 11px 13px;
+  }
+
+  .geofence-map-header h2 {
+    font-size: 15px;
+  }
+
+  .geofence-map-header p {
+    font-size: 10px;
+  }
+
+  .geofence-map-status {
+    font-size: 9px;
+    padding: 5px 7px;
+  }
+
+  .geofence-map-info {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .geofence-selected-coordinates {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .geofence-table-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+}
+
+
+/* ============================================================
+   VERY SMALL MOBILE
+============================================================ */
+
+@media (max-width: 420px) {
+
+  .geofence-header {
+    gap: 10px;
+  }
+
+  .geofence-header h1 {
+    font-size: 20px;
+  }
+
+  .geofence-header p {
+    font-size: 11px;
+  }
+
+  .geofence-count {
+    min-width: 62px;
+    padding: 8px;
+  }
+
+  .geofence-count strong {
+    font-size: 17px;
+  }
+
+  .geofence-count span {
+    font-size: 8px;
+  }
+
+  .geofence-tabs {
+    grid-template-columns: 1fr;
+  }
+
+  .geofence-tab {
+    min-height: 45px;
+  }
+
+  .geofence-map {
+    height: 330px;
+  }
+
+  .geofence-map-header {
+    min-height: 58px;
+  }
+
+  .geofence-map-status {
+    display: none;
+  }
+
+}
