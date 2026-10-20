@@ -13,6 +13,8 @@ const authRoutes = require("./routes/auth.routes");
 const locationRoutes = require("./routes/location.routes");
 const sosRoutes = require("./routes/sos.routes");
 const geofenceRoutes = require("./routes/geofence.routes");
+const accountRoutes = require("./routes/account.routes");
+const importRoutes = require("./routes/import.routes");
 
 const app = express();
 
@@ -20,7 +22,9 @@ const app = express();
 // ==========================================
 // MIDDLEWARE
 // ==========================================
-
+//import xls file
+app.use("/api/import", importRoutes);
+// 
 app.use(
     cors({
         origin: "*",
@@ -31,7 +35,7 @@ app.use(
 
 app.use(express.json());
 
-
+app.use("/api/account", accountRoutes);
 // ==========================================
 // HTTP SERVER
 // ==========================================

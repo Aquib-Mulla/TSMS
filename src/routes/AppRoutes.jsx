@@ -6,6 +6,8 @@ import Register from "../views/auth/Register";
 import About from "../views/pages/About";
 import Map from "../views/pages/Map";
 import Contact from "../views/pages/Contact";
+import Account from "../views/pages/Account";
+
 // for admin
 import AdminLogin from "../views/admin/AdminLogin";
 import AdminDashboard from "../views/admin/AdminDashboard";
@@ -22,6 +24,7 @@ function AppRoutes() {
       <Route path="/about" element={<About />} />
       <Route path="/map" element={<Map />} />
       <Route path="/contact" element={<Contact />} />
+      <Route path="/account" element={<Account />} />
       {/* ===========admin============ */}
       <Route path="/adminlogin" element={<AdminLogin />} />
       <Route path="/admin/dashboard" element={<AdminDashboard />} />

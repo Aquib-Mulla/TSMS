@@ -89,6 +89,7 @@ const Navbar = () => {
             NAVIGATION LINKS
         ================================================== */}
 
+
         <nav className={`nav-links ${menuOpen ? "active" : ""}`}>
 
           <NavLink
@@ -98,19 +99,28 @@ const Navbar = () => {
             Home
           </NavLink>
 
-          <NavLink
-            to="/Map"
-            onClick={closeMenu}
-          >
-            Live Map
-          </NavLink>
+          {/* ==================================================
+              PROTECTED NAVIGATION
+              Only show when user is logged in
+          ================================================== */}
 
-          <NavLink
-            to="/geofence"
-            onClick={closeMenu}
-          >
-            Accounts
-          </NavLink>
+          {isLoggedIn && (
+            <>
+              <NavLink
+                to="/Map"
+                onClick={closeMenu}
+              >
+                Live Map
+              </NavLink>
+
+              <NavLink
+                to="/account"
+                onClick={closeMenu}
+              >
+                Accounts
+              </NavLink>
+            </>
+          )}
 
           <NavLink
             to="/about"
@@ -132,7 +142,6 @@ const Navbar = () => {
 
           <div className="mobile-auth">
 
-            {/* Logged out */}
             {!isLoggedIn && (
               <>
                 <Link
@@ -153,7 +162,6 @@ const Navbar = () => {
               </>
             )}
 
-            {/* Logged in */}
             {isLoggedIn && (
               <button
                 type="button"
@@ -167,6 +175,8 @@ const Navbar = () => {
           </div>
 
         </nav>
+
+
 
         {/* ==================================================
             DESKTOP ACTIONS + MOBILE MENU

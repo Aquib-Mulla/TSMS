@@ -1685,24 +1685,46 @@ const GeoFence = () => {
   // IMPORT EXCEL
   // ===================================================
 
-  const handleExcelImport = () => {
 
-    if (!file) {
 
-      alert(
-        "Please select an Excel file first."
-      );
+const handleExcelImport = async () => {
+  if (!file) {
+    alert("Please select an Excel file first.");
+    return;
+  }
 
-      return;
+  try {
+    setSaving(true);
 
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${API_URL}/api/import/geofences`, {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Excel import failed.");
     }
 
+    alert(data.message);
 
-    alert(
-      "Excel file selected successfully. Excel database import can be connected next."
-    );
+    setFile(null);
 
-  };
+    const fileInput = document.getElementById("geofence-excel-file");
+    if (fileInput) fileInput.value = "";
+
+    await fetchGeofences();
+  } catch (error) {
+    console.error("Excel import error:", error);
+    alert(error.message || "Excel import failed.");
+  } finally {
+    setSaving(false);
+  }
+};
 
 
   // ===================================================

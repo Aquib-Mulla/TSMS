@@ -22,6 +22,9 @@
     "leaflet": "^1.9.4",
     "leaflet-draw": "^1.0.4",
     "lucide-react": "^1.33.0",
+    "maplibre-gl": "^6.15.0",
+    "multer": "^2.4.0",
+    "mysql2": "^3.24.6",
     "react": "^19.2.8",
     "react-chartjs-2": "^5.3.1",
     "react-countup": "^6.5.3",
@@ -30,7 +33,8 @@
     "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.18.2",
     "socket.io": "^4.8.3",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/react": "^19.2.17",
