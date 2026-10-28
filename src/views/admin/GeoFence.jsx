@@ -574,22 +574,29 @@ const GeoFence = () => {
     };
 
 
+    const riskColor =
+      formData.riskLevel === "HIGH" || formData.riskLevel === "CRITICAL"
+        ? "#dc2626"
+        : formData.riskLevel === "MEDIUM"
+          ? "#eab308"
+          : "#16a34a";
+
     // -----------------------------------------------
     // UPDATE SOURCE IF IT EXISTS
     // -----------------------------------------------
 
-    if (
-      map.getSource(
-        "geofence-preview"
-      )
-    ) {
+    if (map.getSource("geofence-preview")) {
+      map.getSource("geofence-preview").setData(geoJson);
 
-      map.getSource(
-        "geofence-preview"
-      ).setData(geoJson);
+      if (map.getLayer("geofence-preview-fill")) {
+        map.setPaintProperty("geofence-preview-fill", "fill-color", riskColor);
+      }
+
+      if (map.getLayer("geofence-preview-line")) {
+        map.setPaintProperty("geofence-preview-line", "line-color", riskColor);
+      }
 
       return;
-
     }
 
 
@@ -627,7 +634,7 @@ const GeoFence = () => {
       paint: {
 
         "fill-color":
-          "#0f766e",
+          riskColor,
 
         "fill-opacity":
           0.14,
@@ -655,7 +662,7 @@ const GeoFence = () => {
       paint: {
 
         "line-color":
-          "#0f766e",
+          riskColor,
 
         "line-width":
           3,
@@ -733,6 +740,7 @@ const GeoFence = () => {
     formData.latitude,
     formData.longitude,
     formData.radius,
+    formData.riskLevel,
     mapReady,
   ]);
 
@@ -788,10 +796,10 @@ const GeoFence = () => {
               Number(fence.radius),
 
             zoneType:
-              fence.zone_type,
+              String(fence.zone_type || "SAFE").toUpperCase(),
 
             riskLevel:
-              fence.risk_level,
+              String(fence.risk_level || "LOW").toUpperCase(),
 
             description:
               fence.description || "",
@@ -921,138 +929,103 @@ const GeoFence = () => {
       // ---------------------------------------------
 
       const geoJson = {
-
-        type:
-          "FeatureCollection",
-
-        features:
-          geofences.map(
-            fence => ({
-
-              type:
-                "Feature",
-
-              properties: {
-
-                id:
-                  fence.id,
-
-                name:
-                  fence.name,
-
-                zoneType:
-                  fence.zoneType,
-
-                riskLevel:
-                  fence.riskLevel,
-
-                radius:
-                  fence.radius,
-
-              },
-
-              geometry: {
-
-                type:
-                  "Polygon",
-
-                coordinates: [
-
-                  createCircleCoordinates(
-
-                    fence.latitude,
-
-                    fence.longitude,
-
-                    fence.radius
-
-                  ),
-
-                ],
-
-              },
-
-            })
-          ),
-
+        type: "FeatureCollection",
+        features: geofences
+          .filter(fence =>
+            Number.isFinite(Number(fence.latitude)) &&
+            Number.isFinite(Number(fence.longitude)) &&
+            Number.isFinite(Number(fence.radius)) &&
+            Number(fence.radius) > 0
+          )
+          .map(fence => ({
+            type: "Feature",
+            properties: {
+              id: fence.id,
+              name: fence.name,
+              zoneType: String(fence.zoneType || "SAFE").toUpperCase(),
+              riskLevel: String(fence.riskLevel || "LOW").toUpperCase(),
+              radius: Number(fence.radius),
+            },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                createCircleCoordinates(
+                  Number(fence.latitude),
+                  Number(fence.longitude),
+                  Number(fence.radius)
+                ),
+              ],
+            },
+          })),
       };
-
 
       // ---------------------------------------------
       // ADD SOURCE
       // ---------------------------------------------
 
-      map.addSource(
-        "saved-geofences",
-        {
+      map.addSource("saved-geofences", {
+        type: "geojson",
+        data: geoJson,
+      });
 
-          type:
-            "geojson",
-
-          data:
-            geoJson,
-
-        }
-      );
-
+      const riskColorExpression = [
+        "match",
+        ["get", "riskLevel"],
+        "HIGH", "#dc2626",
+        "CRITICAL", "#dc2626",
+        "MEDIUM", "#eab308",
+        "LOW", "#16a34a",
+        "#16a34a",
+      ];
 
       // ---------------------------------------------
-      // FILL
+      // FILLED RISK AREAS
       // ---------------------------------------------
 
       map.addLayer({
-
-        id:
-          "saved-geofences-fill",
-
-        type:
-          "fill",
-
-        source:
-          "saved-geofences",
-
+        id: "saved-geofences-fill",
+        type: "fill",
+        source: "saved-geofences",
         paint: {
-
-          "fill-color":
-            "#0f766e",
-
-          "fill-opacity":
-            0.12,
-
+          "fill-color": riskColorExpression,
+          "fill-opacity": 0.22,
         },
-
       });
 
-
       // ---------------------------------------------
-      // BORDER
+      // RISK AREA BORDER
       // ---------------------------------------------
 
       map.addLayer({
-
-        id:
-          "saved-geofences-line",
-
-        type:
-          "line",
-
-        source:
-          "saved-geofences",
-
+        id: "saved-geofences-line",
+        type: "line",
+        source: "saved-geofences",
         paint: {
-
-          "line-color":
-            "#0f766e",
-
-          "line-width":
-            3,
-
-          "line-opacity":
-            0.85,
-
+          "line-color": riskColorExpression,
+          "line-width": 3,
+          "line-opacity": 1,
         },
-
       });
+
+      // ---------------------------------------------
+      // AUTOMATICALLY FRAME ALL SAVED GEOFENCES
+      // ---------------------------------------------
+
+      if (geoJson.features.length > 0) {
+        const bounds = new maplibregl.LngLatBounds();
+
+        geoJson.features.forEach(feature => {
+          feature.geometry.coordinates[0].forEach(coordinate => {
+            bounds.extend(coordinate);
+          });
+        });
+
+        map.fitBounds(bounds, {
+          padding: 55,
+          maxZoom: 13,
+          duration: 600,
+        });
+      }
 
     };
 
@@ -2295,7 +2268,7 @@ return (
 
                 <span />
 
-                Map Ready
+                {mapReady ? "Map Ready" : "Loading Map..."}
 
               </div>
 

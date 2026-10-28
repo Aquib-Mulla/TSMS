@@ -1075,15 +1075,17 @@ export default function Map() {
 
                 radius,
 
-                zoneType:
+                zoneType: String(
                   fence.zoneType ||
                   fence.zone_type ||
-                  "SAFE",
+                  "SAFE"
+                ).toUpperCase(),
 
-                riskLevel:
+                riskLevel: String(
                   fence.riskLevel ||
                   fence.risk_level ||
-                  "LOW",
+                  "LOW"
+                ).toUpperCase(),
 
                 status:
                   fence.status ||
@@ -1180,16 +1182,6 @@ export default function Map() {
 
       if (
         map.getLayer(
-          "geofence-center"
-        )
-      ) {
-        map.removeLayer(
-          "geofence-center"
-        );
-      }
-
-      if (
-        map.getLayer(
           "geofence-outline"
         )
       ) {
@@ -1244,11 +1236,18 @@ export default function Map() {
         source: "geofences",
 
         paint: {
-          "fill-color":
-            "#0f766e",
+          // Color each area by its risk level.
+          "fill-color": [
+            "match",
+            ["upcase", ["to-string", ["get", "riskLevel"]]],
+            "HIGH", "#dc2626",
+            "MEDIUM", "#eab308",
+            "LOW", "#16a34a",
+            "#16a34a"
+          ],
 
-          "fill-opacity":
-            0.12,
+          // Transparent fill highlights the whole geofence area.
+          "fill-opacity": 0.22,
         },
       });
 
@@ -1264,12 +1263,18 @@ export default function Map() {
         source: "geofences",
 
         paint: {
-          "line-color":
-            "#0f766e",
+          // Keep the border color matched to the risk level.
+          "line-color": [
+            "match",
+            ["upcase", ["to-string", ["get", "riskLevel"]]],
+            "HIGH", "#dc2626",
+            "MEDIUM", "#eab308",
+            "LOW", "#16a34a",
+            "#16a34a"
+          ],
 
           "line-width": 3,
-
-          "line-opacity": 0.9,
+          "line-opacity": 1,
         },
       });
 
@@ -1297,31 +1302,8 @@ export default function Map() {
         );
       }
 
-      // ------------------------------------------------------
-      // ADD CENTER CIRCLE
-      // ------------------------------------------------------
-
-      map.addLayer({
-        id: "geofence-center",
-
-        type: "circle",
-
-        source:
-          "geofence-centers",
-
-        paint: {
-          "circle-radius": 7,
-
-          "circle-color":
-            "#0f766e",
-
-          "circle-stroke-color":
-            "#ffffff",
-
-          "circle-stroke-width":
-            2,
-        },
-      });
+      // Center-point markers intentionally disabled.
+      // Users select a geofence by clicking its highlighted area.
     }, []);
 
   // ==========================================================
@@ -1379,15 +1361,17 @@ export default function Map() {
                     fence.radius
                   ),
 
-                zoneType:
+                zoneType: String(
                   fence.zone_type ||
                   fence.zoneType ||
-                  "SAFE",
+                  "SAFE"
+                ).toUpperCase(),
 
-                riskLevel:
+                riskLevel: String(
                   fence.risk_level ||
                   fence.riskLevel ||
-                  "LOW",
+                  "LOW"
+                ).toUpperCase(),
 
                 alertOnEntry:
                   toBoolean(
@@ -1578,12 +1562,6 @@ export default function Map() {
       handleGeofenceClick
     );
 
-    map.on(
-      "click",
-      "geofence-center",
-      handleGeofenceClick
-    );
-
     // --------------------------------------------------------
     // GEO-FENCE CURSOR
     // --------------------------------------------------------
@@ -1606,24 +1584,6 @@ export default function Map() {
       }
     );
 
-    map.on(
-      "mouseenter",
-      "geofence-center",
-      () => {
-        map.getCanvas().style.cursor =
-          "pointer";
-      }
-    );
-
-    map.on(
-      "mouseleave",
-      "geofence-center",
-      () => {
-        map.getCanvas().style.cursor =
-          "";
-      }
-    );
-
     // --------------------------------------------------------
     // CLICK OUTSIDE GEO-FENCE
     // --------------------------------------------------------
@@ -1637,7 +1597,6 @@ export default function Map() {
             {
               layers: [
                 "geofence-fill",
-                "geofence-center",
               ],
             }
           );
