@@ -393,7 +393,9 @@ export default function Map() {
 
   const [risk, setRisk] =
     useState(12);
-
+  const [activeRiskZone, setActiveRiskZone] = useState(null);
+  const [isRiskAlertOpen, setIsRiskAlertOpen] = useState(false);
+  const previousRiskZoneRef = useRef(null);
   const [distance, setDistance] =
     useState(null);
 
@@ -540,7 +542,55 @@ export default function Map() {
       },
       []
     );
+const getRiskZoneAtLocation = useCallback(
+  (location) => {
+    if (!location) return null;
 
+    return geofencesRef.current.find((fence) => {
+      if (
+        String(fence.status || "ACTIVE").toUpperCase() !==
+        "ACTIVE"
+      ) {
+        return false;
+      }
+
+      const latitude = Number(fence.latitude);
+      const longitude = Number(fence.longitude);
+      const radius = Number(fence.radius);
+
+      if (
+        !Number.isFinite(latitude) ||
+        !Number.isFinite(longitude) ||
+        !Number.isFinite(radius) ||
+        radius <= 0
+      ) {
+        return false;
+      }
+
+      const riskLevel = String(
+        fence.riskLevel || fence.risk_level || ""
+      ).toUpperCase();
+
+      const zoneType = String(
+        fence.zoneType || fence.zone_type || ""
+      ).toUpperCase();
+
+      const isDangerZone =
+        ["HIGH", "CRITICAL"].includes(riskLevel) ||
+        ["HIGH", "CRITICAL"].includes(zoneType);
+
+      if (!isDangerZone) return false;
+
+      const distance = calculateDistanceBetweenPoints(
+        location,
+        { lat: latitude, lng: longitude }
+      );
+
+      return distance <= radius;
+    }) || null;
+  },
+  [calculateDistanceBetweenPoints]
+);
   // ==========================================================
   // PREVENT GPS JUMPS
   // ==========================================================
@@ -2459,12 +2509,34 @@ export default function Map() {
           currentAccuracy
         );
 
-        setRisk(
-          calculateRisk(
-            currentAccuracy
-          )
-        );
+        const baseRisk = calculateRisk(currentAccuracy);
+        const riskZone = getRiskZoneAtLocation(location);
 
+        if (riskZone) {
+          const level = String(
+            riskZone.riskLevel || riskZone.risk_level || ""
+          ).toUpperCase();
+
+          const zoneRisk = level === "CRITICAL" ? 95 : 85;
+
+          setRisk(Math.max(baseRisk, zoneRisk));
+          setActiveRiskZone(riskZone);
+
+          const previousZoneId = previousRiskZoneRef.current;
+          const currentZoneId = String(riskZone.id);
+
+          // Open the popup only when entering a new zone.
+          if (previousZoneId !== currentZoneId) {
+            setIsRiskAlertOpen(true);
+          }
+
+          previousRiskZoneRef.current = currentZoneId;
+        } else {
+          setRisk(baseRisk);
+          setActiveRiskZone(null);
+          previousRiskZoneRef.current = null;
+          setIsRiskAlertOpen(false);
+        }
         updateUserMarker();
 
         if (
@@ -2494,6 +2566,12 @@ export default function Map() {
         updateUserMarker,
       ]
     );
+    [
+  isReliableGPSPosition,
+  isLocationJumpReasonable,
+  updateUserMarker,
+  getRiskZoneAtLocation,
+]
 
   // ==========================================================
   // GPS ERROR
@@ -3358,9 +3436,9 @@ export default function Map() {
           STATUS CARD
       ===================================================== */}
 
-      <div className="toursafe-status-card">
+      <div className="toursafe-status-cardh">
 
-        <div className="toursafe-status-main">
+        <div className="toursafe-status-main hidecard">
 
           <div
             className={
@@ -3388,26 +3466,284 @@ export default function Map() {
 
         </div>
 
-        <div className="toursafe-risk">
 
-          {risk < 20 ? (
-            <ShieldCheck
-              size={18}
-            />
-          ) : (
-            <ShieldAlert
-              size={18}
-            />
-          )}
+<div className="toursafe-status-card">
+  <div className="toursafe-status-main">
+    <div
+      className={
+        tourStarted
+          ? "toursafe-status-indicator active"
+          : "toursafe-status-indicator"
+      }
+    />
 
-          <strong>
-            {risk}%
-          </strong>
+    <div className="toursafe-status-text">
+      <strong>
+        {tourStarted ? "Tour Active" : "Ready to Explore"}
+      </strong>
 
-        </div>
+      <span>
+        {tracking ? "Live location tracking" : "Location available"}
+      </span>
+    </div>
+  </div>
+
+  <div
+    className="toursafe-risk"
+    style={{
+      color:
+        risk >= 80
+          ? "#dc2626"
+          : risk >= 60
+          ? "#ea580c"
+          : risk >= 30
+          ? "#d97706"
+          : "#15803d",
+    }}
+  >
+    {risk < 30 ? (
+      <ShieldCheck size={18} />
+    ) : (
+      <ShieldAlert size={18} />
+    )}
+
+    <strong>{risk}%</strong>
+  </div>
+
+  <div className="toursafe-risk-details">
+    <div className="toursafe-risk-labels">
+      <span>Risk level</span>
+
+      <strong
+        style={{
+          color:
+            risk >= 80
+              ? "#dc2626"
+              : risk >= 60
+              ? "#ea580c"
+              : risk >= 30
+              ? "#d97706"
+              : "#15803d",
+        }}
+      >
+        {risk >= 80
+          ? "CRITICAL"
+          : risk >= 60
+          ? "HIGH"
+          : risk >= 30
+          ? "MODERATE"
+          : "LOW"}
+      </strong>
+    </div>
+
+    <div
+      className="toursafe-risk-track"
+      role="progressbar"
+      aria-label="Current safety risk"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.min(100, Math.max(0, risk))}
+    >
+      <div
+        className="toursafe-risk-fill"
+        style={{
+          width: `${Math.min(100, Math.max(0, risk))}%`,
+          backgroundColor:
+            risk >= 80
+              ? "#dc2626"
+              : risk >= 60
+              ? "#ea580c"
+              : risk >= 30
+              ? "#d97706"
+              : "#16a34a",
+        }}
+      />
+    </div>
+  </div>
+</div>
 
       </div>
 
+      {activeRiskZone && isRiskAlertOpen && (
+        <div
+          role="alertdialog"
+          aria-modal="true"
+          aria-labelledby="risk-alert-title"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 99999,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "20px",
+            background: "rgba(15, 23, 42, 0.65)",
+            backdropFilter: "blur(4px)",
+          }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "380px",
+              overflow: "hidden",
+              borderRadius: "20px",
+              background: "#ffffff",
+              boxShadow: "0 24px 70px rgba(0,0,0,0.3)",
+              color: "#1f2937",
+              fontFamily: "Arial, sans-serif",
+            }}
+          >
+            {/* Warning header */}
+            <div
+              style={{
+                background: "#b91c1c",
+                color: "#ffffff",
+                padding: "24px 20px",
+                textAlign: "center",
+              }}
+            >
+              <div
+                style={{
+                  width: "64px",
+                  height: "64px",
+                  margin: "0 auto 12px",
+                  borderRadius: "50%",
+                  background: "rgba(255,255,255,0.16)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "34px",
+                  fontWeight: 700,
+                }}
+              >
+                !
+              </div>
+
+              <div
+                id="risk-alert-title"
+                style={{
+                  fontSize: "21px",
+                  fontWeight: 800,
+                  letterSpacing: "0.5px",
+                }}
+              >
+                DANGER ZONE ALERT
+              </div>
+
+              <div
+                style={{
+                  marginTop: "7px",
+                  fontSize: "14px",
+                  opacity: 0.95,
+                }}
+              >
+                Your safety may be at risk
+              </div>
+            </div>
+
+            {/* Alert details */}
+            <div style={{ padding: "22px 20px" }}>
+              <div
+                style={{
+                  fontSize: "15px",
+                  lineHeight: 1.6,
+                  color: "#374151",
+                  textAlign: "center",
+                }}
+              >
+                You have entered{" "}
+                <strong>
+                  {activeRiskZone.name || "a high-risk area"}
+                </strong>
+                . Please stay alert and move toward a safer location.
+              </div>
+
+              <div
+                style={{
+                  marginTop: "20px",
+                  padding: "15px",
+                  border: "1px solid #fecaca",
+                  borderRadius: "12px",
+                  background: "#fef2f2",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: "12px",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "#7f1d1d",
+                      fontWeight: 700,
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    Current risk score
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: "5px",
+                      fontSize: "13px",
+                      color: "#991b1b",
+                    }}
+                  >
+                    {String(
+                      activeRiskZone.riskLevel ||
+                      activeRiskZone.risk_level ||
+                      "HIGH"
+                    ).toUpperCase()} RISK
+                  </div>
+                </div>
+
+                <div
+                  style={{
+                    fontSize: "30px",
+                    fontWeight: 800,
+                    color: "#b91c1c",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {risk}%
+                </div>
+              </div>
+
+              {/* Acknowledgement button */}
+              <button
+                type="button"
+                onClick={() => setIsRiskAlertOpen(false)}
+                style={{
+                  width: "100%",
+                  marginTop: "20px",
+                  padding: "15px 18px",
+                  border: "none",
+                  borderRadius: "12px",
+                  background: "#b91c1c",
+                  color: "#ffffff",
+                  fontSize: "16px",
+                  fontWeight: 700,
+                  cursor: "pointer",
+                }}
+              >
+                OK, I Understand
+              </button>
+
+              <div
+                style={{
+                  marginTop: "12px",
+                  textAlign: "center",
+                  color: "#6b7280",
+                  fontSize: "12px",
+                }}
+              >
+                Please prioritize your safety.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* ====================================================
           DESTINATION CARD
       ===================================================== */}

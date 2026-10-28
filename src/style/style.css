@@ -2826,284 +2826,373 @@
 
 
 /* ============================================================
-   RESPONSIVE - MOBILE
+   RESPONSIVE - MOBILE   USER MAP
    ============================================================ */
 
-@media (max-width: 520px) {
+
+/* ============================================================
+   TOURSAFE - MOBILE MAP & UI LAYOUT
+   Responsive width: 414px and below
+   Theme: Teal (#0f766e), White (#ffffff), Black (#000000)
+   ============================================================ */
+
+@media (max-width: 414px) {
+
+  /* 1. FULL-SCREEN MAP */
 
   .toursafe-map-page {
+    position: relative;
+    width: 100%;
+    height: 100vh;
     height: 100dvh;
-    min-height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+    background: #ffffff;
+    isolation: isolate;
   }
-
 
   .toursafe-map {
-    height: 100dvh;
-    min-height: 100dvh;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    background: #e8eeeb;
   }
 
+  .toursafe-map .maplibregl-canvas-container {
+    width: 100%;
+    height: 100%;
+  }
 
-  /* Search */
+  .toursafe-map canvas {
+    outline: none;
+  }
+
+  /* 2. SEARCH BAR */
 
   .toursafe-search-wrapper {
-    top: 10px;
-    left: 10px;
-
-    width: calc(100% - 20px);
+    position: absolute;
+    top: max(10px, env(safe-area-inset-top));
+    left: 12px;
+    right: 12px;
+    width: auto;
+    z-index: 40;
   }
-
 
   .toursafe-search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
     min-height: 46px;
-
-    padding: 0 10px;
-
-    border-radius: 10px;
+    box-sizing: border-box;
+    padding: 0 12px;
+    background: #ffffff;
+    border: 1px solid #dce5e2;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
   }
-
 
   .toursafe-search-box input {
-    padding: 11px 7px;
-
+    flex: 1;
+    min-width: 0;
+    height: 42px;
+    padding: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #000000;
     font-size: 14px;
   }
 
+  .toursafe-search-box input::placeholder {
+    color: #6b7280;
+  }
 
-  /* Status */
+  .toursafe-search-results {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    max-height: min(200px, 30dvh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: #ffffff;
+    border: 1px solid #dce5e2;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    z-index: 45;
+  }
+
+  /* 3. TOURIST STATUS AND RISK CARD */
 
   .toursafe-status-card {
-    top: 68px;
-    left: 10px;
-
-    width: calc(100% - 20px);
-
-    padding: 10px;
-
-    border-radius: 10px;
+    position: absolute;
+    top: calc(max(10px, env(safe-area-inset-top)) + 56px);
+    left: 12px;
+    right: 12px;
+    width: auto;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    background: #ffffff;
+    border: 1px solid #dce5e2;
+    border-left: 4px solid #0f766e;
+    border-radius: 12px;
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.10);
+    z-index: 20;
   }
-
 
   .toursafe-status-card h3 {
-    font-size: 14px;
+    margin: 0 0 4px;
+    color: #000000;
+    font-size: 13px;
+    line-height: 1.4;
   }
-
 
   .toursafe-status-card p {
-    font-size: 12px;
+    margin: 3px 0;
+    color: #374151;
+    font-size: 11px;
+    line-height: 1.4;
   }
 
+  .toursafe-status-card progress {
+    display: block;
+    width: 100%;
+    height: 7px;
+    margin-top: 7px;
+    accent-color: #0f766e;
+  }
 
-  /* Destination */
+  .toursafe-status-card .risk-progress,
+  .toursafe-status-card .risk-progress-bar {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* 4. MAP FLOATING CONTROLS */
+
+  .toursafe-map-tools {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    bottom: auto;
+    transform: translateY(-15%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    z-index: 25;
+  }
+
+  .toursafe-map-tool {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    padding: 0;
+    color: #0f766e;
+    background: #ffffff;
+    border: 1px solid #dce5e2;
+    border-radius: 12px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .toursafe-map-tool:active {
+    background: #e6f4f1;
+  }
+
+  /* 5. DESTINATION CARD */
 
   .toursafe-destination-card {
-    top: auto;
-    left: 10px;
-    right: 10px;
-    bottom: 125px;
-
+    position: absolute;
+    left: 12px;
+    right: 64px;
+    bottom: calc(78px + env(safe-area-inset-bottom));
     width: auto;
-
-    padding: 10px;
+    box-sizing: border-box;
+    max-height: min(145px, 22dvh);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 10px 12px;
+    background: #ffffff;
+    border: 1px solid #dce5e2;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
+    z-index: 20;
   }
 
-
-  /* Map controls */
-
-  .toursafe-map .maplibregl-ctrl-top-right {
-    top: 155px;
-    right: 10px;
+  .toursafe-destination-card h3,
+  .toursafe-destination-card strong {
+    color: #000000;
+    font-size: 13px;
+    line-height: 1.4;
   }
 
+  .toursafe-destination-card p,
+  .toursafe-destination-card small {
+    color: #4b5563;
+    font-size: 11px;
+    line-height: 1.4;
+  }
+
+  /* ============================================================
+     6. BOTTOM ACTION PANEL
+     Equal-sized buttons with clean spacing
+     ============================================================ */
+
+  .toursafe-bottom-panel {
+    position: absolute;
+    left: 200px;
+    right: -83px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 8px;
+    width: auto;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    z-index: 35;
+  }
+
+  .toursafe-bottom-panel button {
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    min-height: 48px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 5px;
+    margin: 0;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.25;
+    text-align: center;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color 0.15s ease,
+                box-shadow 0.15s ease;
+  }
+
+  /* Start Tour */
+
+  .toursafe-bottom-panel button:first-child {
+    color: #ffffff;
+    background: #0f766e;
+    border-color: #0f766e;
+  }
+
+  .toursafe-bottom-panel button:first-child:active {
+    background: #115e59;
+  }
+
+  /* SOS - make the emergency action easy to identify */
+
+  .toursafe-bottom-panel button:last-child {
+    color: #ffffff;
+    background: #000000;
+    border-color: #000000;
+  }
+
+  .toursafe-bottom-panel button:last-child:active {
+    background: #262626;
+  }
+
+  /* Consistent focus visibility */
+
+  .toursafe-bottom-panel button:focus-visible,
+  .toursafe-map-tool:focus-visible {
+    outline: 3px solid #0f766e;
+    outline-offset: 2px;
+  }
+
+  /* 7. HIDE UNNECESSARY LOCATION LABELS */
+
+  .toursafe-location-label {
+    display: none;
+  }
+
+  /* 8. MAPLIBRE CONTROLS */
+
+  .toursafe-map .maplibregl-ctrl-bottom-left {
+    bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+    left: 10px !important;
+  }
+
+  .toursafe-map .maplibregl-ctrl-bottom-right {
+    bottom: calc(78px + env(safe-area-inset-bottom)) !important;
+    right: 10px !important;
+  }
+
+  .toursafe-map .maplibregl-ctrl-group {
+    overflow: hidden;
+    border: 1px solid #dce5e2;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+  }
 
   .toursafe-map .maplibregl-ctrl-group button {
     width: 36px;
     height: 36px;
   }
 
+  /* 9. KEEP MAP MARKERS VISIBLE */
 
-  /* Map tools */
-
-  .toursafe-map-tools {
-    right: 10px;
-    bottom: 205px;
-
-    gap: 6px;
+  .toursafe-map .maplibregl-marker {
+    z-index: 5;
   }
 
+  /* 10. SHORT MOBILE SCREENS */
 
-  .toursafe-map-tool {
-    width: 40px;
-    height: 40px;
+  @media (max-height: 650px) {
 
-    border-radius: 9px;
-  }
+    .toursafe-status-card {
+      padding: 7px 10px;
+    }
 
+    .toursafe-status-card p {
+      font-size: 10px;
+    }
 
-  /* Style menu */
+    .toursafe-destination-card {
+      max-height: 90px;
+      bottom: calc(70px + env(safe-area-inset-bottom));
+    }
 
-  .toursafe-style-menu {
-    right: 58px;
-    bottom: 205px;
+    .toursafe-bottom-panel button {
+      min-height: 44px;
+      padding: 7px 4px;
+      font-size: 11px;
+    }
 
-    width: 155px;
-  }
+    .toursafe-map-tools {
+      gap: 6px;
+    }
 
-
-  /* Route summary */
-
-  .toursafe-route-summary {
-    left: 10px;
-    right: 10px;
-    bottom: 125px;
-
-    width: auto;
-
-    justify-content: space-between;
-
-    gap: 10px;
-
-    padding: 10px 12px;
-  }
-
-
-  /* Route error */
-
-  .toursafe-route-error {
-    left: 10px;
-    right: 10px;
-    bottom: 125px;
-
-    transform: none;
-
-    max-width: none;
-
-    text-align: center;
-  }
-
-
-  /* Bottom panel */
-
-  .toursafe-bottom-panel {
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
-
-    transform: none;
-
-    width: auto;
-    max-width: none;
-
-    display: grid;
-
-    grid-template-columns: 1fr 1fr;
-
-    gap: 7px;
-
-    padding: 8px;
-
-    border-radius: 12px;
-  }
-
-
-  .toursafe-start-button,
-  .toursafe-stop-button {
-    width: 100%;
-    min-width: 0;
-
-    padding: 11px 8px;
-
-    font-size: 12px;
-  }
-
-
-  .toursafe-sos-button {
-    grid-column: 1 / -1;
-
-    width: 100%;
-    min-width: 0;
-
-    padding: 11px 8px;
-
-    font-size: 12px;
-  }
-
-
-  /* Message */
-
-  .toursafe-message {
-    top: 65px;
-
-    left: 10px;
-    right: 10px;
-
-    transform: none;
-
-    max-width: none;
-
-    text-align: center;
-  }
-
-
-  /* Scale */
-
-  .toursafe-map .maplibregl-ctrl-bottom-left {
-    bottom: 100px;
-    left: 10px;
-  }
-
-
-  /* Attribution */
-
-  .toursafe-map .maplibregl-ctrl-bottom-right {
-    right: 5px;
-    bottom: 5px;
-
-    max-width: 65%;
+    .toursafe-map-tool {
+      width: 38px;
+      height: 38px;
+      min-width: 38px;
+    }
   }
 }
-
-
-/* ============================================================
-   VERY SMALL MOBILE
-   ============================================================ */
-
-@media (max-width: 380px) {
-
-  .toursafe-status-card {
-    padding: 8px;
-  }
-
-
-  .toursafe-status-card p {
-    font-size: 11px;
-  }
-
-
-  .toursafe-destination-card {
-    bottom: 120px;
-  }
-
-
-  .toursafe-bottom-panel {
-    grid-template-columns: 1fr;
-  }
-
-
-  .toursafe-sos-button {
-    grid-column: auto;
-  }
-
-
-  .toursafe-map-tools {
-    bottom: 270px;
-  }
-
-
-  .toursafe-style-menu {
-    bottom: 270px;
-  }
-}
-
 
 /* ============================================================
    ACCESSIBILITY
@@ -3891,4 +3980,69 @@
     .account-save-button {
         transition: none;
     }
+}
+
+
+/* risk card on map page */
+
+.toursafe-status-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+}
+
+.toursafe-status-main {
+  min-width: 0;
+}
+
+.toursafe-risk {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 20px;
+  font-weight: 800;
+  transition: color 300ms ease;
+}
+
+.toursafe-risk-details {
+  grid-column: 1 / -1;
+  width: 100%;
+}
+
+.toursafe-risk-labels {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 7px;
+  font-size: 12px;
+}
+
+.toursafe-risk-labels span {
+  color: #64748b;
+}
+
+.toursafe-risk-labels strong {
+  font-size: 11px;
+  letter-spacing: 0.6px;
+}
+
+.toursafe-risk-track {
+  width: 100%;
+  height: 9px;
+  overflow: hidden;
+  background: #e5e7eb;
+  border-radius: 999px;
+}
+
+.toursafe-risk-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition:
+    width 600ms ease,
+    background-color 300ms ease;
+}
+.hidecard{
+  display: none;
 }
